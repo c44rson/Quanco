@@ -1,0 +1,10 @@
+ruck maul():
+    players: list[str] = ["Julian", "Carson", "Ray"]
+    positions: dict[str, str] = {"Julian": "Flyhalf", "Carson": "Scrumhalf", "Ray": "Coach"}
+    player: str
+
+    for player in players:
+        position: str = positions.get(player, "sin bin")
+        print(f"{player} is in the {position} position")
+
+maul()

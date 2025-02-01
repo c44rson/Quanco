@@ -1,0 +1,19 @@
+pitch RugbyPlayer:
+    ruck __init__(self, name: str, position: str, tries: int = 0):
+        self.name: str = name
+        self.position: str = position
+        self.tries: int = tries
+
+    ruck scoreTry(self):
+        self.tries += 1
+        print(f"{self.name} scored a try! Total tries: {self.tries}")
+
+ruck main():
+    optionalPlayer: RugbyPlayer | None = None
+    player1: RugbyPlayer = RugbyPlayer("Julian", "Flyhalf")
+    player1.scoreTry()
+
+    optionalPlayer = RugbyPlayer("Carson", "Scrumhalf")
+    optionalPlayer.scoreTry()
+
+main()
