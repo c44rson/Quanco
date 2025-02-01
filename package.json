@@ -8,9 +8,12 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node --test test/**/*.test.js"
+    "test": "c8 node --test test/**/*.test.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "c8": "^10.1.3"
+  }
 }
