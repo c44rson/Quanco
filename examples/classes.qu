@@ -10,7 +10,7 @@ pitch RugbyPlayer:
 
 ruck main():
     optionalPlayer: RugbyPlayer | None = None
-    player1: RugbyPlayer = RugbyPlayer("Julian", "Flyhalf")
+    player1: RugbyPlayer = RugbyPlayer("Julian", "Flanker")
     player1.scoreTry()
 
     optionalPlayer = RugbyPlayer("Carson", "Scrumhalf")

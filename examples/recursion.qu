@@ -6,6 +6,6 @@ ruck lineout(depth: int) -> int:
 
 ruck main():
     result: int = lineout(5)
-    print(result)  # Output: 120
+    print(result)
 
 main()
