@@ -2,3 +2,9 @@
 
 # Quanco
 A language for the intersection of Rugby fans, and those who love Java programming, but hate its verbosity.
+
+## Our Story
+
+## Notable Features
+
+## Example Programs
