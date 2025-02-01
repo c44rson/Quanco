@@ -1,2 +1,2 @@
 # Quanco
-A language for the intersection of Rugby fans and Java/Python programmers
+A language for the intersection of Rugby fans and Java programmers
