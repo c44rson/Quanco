@@ -1,3 +1,4 @@
-![Quanco Logo](https://github.com/c44rson/Quanco/blob/main/docs/QuancoLogo.png | width = 100)
+![Quanco Logo](https://github.com/c44rson/Quanco/blob/main/docs/QuancoLogo.png)
+<img src="https://github.com/c44rson/Quanco/blob/main/docs/QuancoLogo.png" alt="Quanco Logo" width="300" height="200">
 # Quanco
 A language for the intersection of Rugby fans and Java programmers
