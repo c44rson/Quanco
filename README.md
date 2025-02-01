@@ -15,6 +15,9 @@ One evening after a challenging and rather cumbersome Loyola Rugby practice in S
 * Class and Function arguments can be listed in order or by a given argument name.
 * No need for ; on every line.
 * Indentation is forced, think Python conventions.
+* function = ruck
+* Class = pitch
+* return = pass
 
 ## Example Programs
 ### Defining and Calling a Function
