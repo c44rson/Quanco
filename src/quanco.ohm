@@ -1,0 +1,97 @@
+Quanco {
+  Program = (ClassDecl | FunctionDecl | Statement)*
+
+  ClassDecl = "pitch" identifier ":" ClassBody
+
+  ClassBody = (ConstructorDecl | MethodDecl)+
+
+  ConstructorDecl = "ruck" "__init__" "(" ConstructorParams ")" ":" ConstructorBody
+
+  ConstructorParams = "self" ("," TypedParam)*
+
+  ConstructorBody = Statement+
+
+  MethodDecl = "ruck" identifier "(" Parameters? ")" ("->" TypeAnnotation)? ":" MethodBody
+
+  MethodBody = Statement+
+
+  FunctionDecl = "ruck" identifier "(" Parameters? ")" ("->" TypeAnnotation)? ":" FunctionBody
+
+  FunctionBody = Statement+
+
+  Parameters = TypedParam ("," TypedParam)*
+
+  TypedParam = identifier ":" TypeAnnotation ("=" Expression)?
+
+  TypeAnnotation = BasicType
+                | ListType
+                | DictType
+                | UnionType
+
+  BasicType = "str" | "int" | "bool" | "float" | identifier
+
+  ListType = "list" "[" TypeAnnotation "]"
+
+  DictType = "dict" "[" TypeAnnotation "," TypeAnnotation "]"
+
+  UnionType = TypeAnnotation "|" TypeAnnotation
+
+  Statement = VarDecl
+            | Assignment
+            | FunctionCall
+            | ReturnStmt
+            | IfStmt
+            | ForLoop
+            | WhileLoop
+            | PrintStmt
+
+  VarDecl = identifier ":" TypeAnnotation ("=" Expression)?
+
+  Assignment = (identifier ("." identifier)?) ("=" | "+=" | "-=" | "*=" | "/=") Expression
+
+  FunctionCall = (identifier ("." identifier)?) "(" Arguments? ")"
+
+  Arguments = (PositionalArg | NamedArg) ("," (PositionalArg | NamedArg))*
+
+  PositionalArg = Expression
+
+  NamedArg = identifier "=" Expression
+
+  ReturnStmt = "pass" Expression?
+
+  IfStmt = "if" Expression ":" Statement+ ("elif" Expression ":" Statement+)* ("else" ":" Statement+)?
+
+  ForLoop = "for" identifier "in" (RangeExpr | identifier) ":" Statement+
+
+  WhileLoop = "while" Expression ":" Statement+
+
+  RangeExpr = "range" "(" Expression ("," Expression)? ("," Expression)? ")"
+
+  PrintStmt = "print" "(" Expression ")"
+
+  Expression = StringLiteral
+             | NumberLiteral
+             | BooleanLiteral
+             | identifier
+             | FunctionCall
+             | BinaryExpr
+             | ParenExpr
+             | FString
+
+  StringLiteral = "\"" (~"\"" any)* "\""
+
+  NumberLiteral = digit+ ("." digit+)?
+
+  BooleanLiteral = "True" | "False"
+
+  BinaryExpr = Expression ("+"|"-"|"*"|"/"|"=="|"!="|">"|"<"|">="|"<=") Expression
+
+  ParenExpr = "(" Expression ")"
+
+  FString = "f" StringLiteral
+
+  identifier = letter (letter | digit | "_")*
+
+  space += comment
+  comment = "#" (~"\n" any)* "\n"
+}
