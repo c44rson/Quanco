@@ -11,7 +11,7 @@
     "test": "c8 node --test test/**/*.test.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Carson Cabrera and Julian Mazzier",
   "license": "ISC",
   "devDependencies": {
     "c8": "^10.1.3"
