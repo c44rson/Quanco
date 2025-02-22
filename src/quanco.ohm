@@ -24,9 +24,9 @@ Quanco {
   TypedParam = identifier ":" TypeAnnotation ("=" Expression)?
 
   TypeAnnotation = BasicType
-                | ListType
-                | DictType
-                | UnionType
+                 | ListType
+                 | DictType
+                 | UnionType
 
   BasicType = "str" | "int" | "bool" | "float" | identifier
 
@@ -45,7 +45,7 @@ Quanco {
             | WhileLoop
             | PrintStmt
 
-  VarDecl = identifier ":" TypeAnnotation ("=" Expression)?
+  VarDecl = identifier "=" Expression
 
   Assignment = (identifier ("." identifier)?) ("=" | "+=" | "-=" | "*=" | "/=") Expression
 
@@ -57,7 +57,7 @@ Quanco {
 
   NamedArg = identifier "=" Expression
 
-  ReturnStmt = "pass" Expression?
+  ReturnStmt = "pass" Expression
 
   IfStmt = "if" Expression ":" Statement+ ("elif" Expression ":" Statement+)* ("else" ":" Statement+)?
 
