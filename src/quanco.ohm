@@ -1,96 +1,111 @@
 Quanco {
-  Program = (ClassDecl | FunctionDecl | Statement)*
+  Program = (TopLevel | space)*
 
-  ClassDecl = "pitch" identifier ":" ClassBody
+  TopLevel = ClassDef | FunctionDef
 
-  ClassBody = (ConstructorDecl | MethodDecl)+
+  ClassDef = "pitch" identifier ":" Block
 
-  ConstructorDecl = "ruck" "__init__" "(" ConstructorParams ")" ":" ConstructorBody
+  FunctionDef = "ruck" identifier "(" Params? ")" ReturnType? ":" Block
 
-  ConstructorParams = "self" ("," TypedParam)*
+  Block = Statement+
 
-  ConstructorBody = Statement+
+  Params = Param ("," Param)*
+  Param = identifier ":" Type ("=" Expr)?
 
-  MethodDecl = "ruck" identifier "(" Parameters? ")" ("->" TypeAnnotation)? ":" MethodBody
-
-  MethodBody = Statement+
-
-  FunctionDecl = "ruck" identifier "(" Parameters? ")" ("->" TypeAnnotation)? ":" FunctionBody
-
-  FunctionBody = Statement+
-
-  Parameters = TypedParam ("," TypedParam)*
-
-  TypedParam = identifier ":" TypeAnnotation ("=" Expression)?
-
-  TypeAnnotation = BasicType
-                 | ListType
-                 | DictType
-                 | UnionType
-
-  BasicType = "str" | "int" | "bool" | "float" | identifier
-
-  ListType = "list" "[" TypeAnnotation "]"
-
-  DictType = "dict" "[" TypeAnnotation "," TypeAnnotation "]"
-
-  UnionType = TypeAnnotation "|" TypeAnnotation
+  ReturnType = "->" Type
 
   Statement = VarDecl
             | Assignment
-            | FunctionCall
-            | ReturnStmt
-            | IfStmt
             | ForLoop
             | WhileLoop
-            | PrintStmt
+            | IfStmt
+            | ReturnStmt
+            | ExprStmt
 
-  VarDecl = identifier "=" Expression
+  VarDecl = identifier ":" Type ("=" Expr)?
 
-  Assignment = (identifier ("." identifier)?) ("=" | "+=" | "-=" | "*=" | "/=") Expression
+  Assignment = LValue "=" Expr
 
-  FunctionCall = (identifier ("." identifier)?) "(" Arguments? ")"
+  LValue = identifier ("." identifier)*
 
-  Arguments = (PositionalArg | NamedArg) ("," (PositionalArg | NamedArg))*
+  ForLoop = "for" identifier "in" Expr ":" Block
 
-  PositionalArg = Expression
+  WhileLoop = "while" Expr ":" Block
 
-  NamedArg = identifier "=" Expression
+  IfStmt = "if" Expr ":" Block
+           ("elif" Expr ":" Block)*
+           ("else" ":" Block)?
 
-  ReturnStmt = "pass" Expression
+  ReturnStmt = "pass" Expr?
 
-  IfStmt = "if" Expression ":" Statement+ ("elif" Expression ":" Statement+)* ("else" ":" Statement+)?
+  ExprStmt = Expr
 
-  ForLoop = "for" identifier "in" (RangeExpr | identifier) ":" Statement+
+  Expr = OrExpr
 
-  WhileLoop = "while" Expression ":" Statement+
+  OrExpr = AndExpr ("or" AndExpr)*
 
-  RangeExpr = "range" "(" Expression ("," Expression)? ("," Expression)? ")"
+  AndExpr = CompareExpr ("and" CompareExpr)*
 
-  PrintStmt = "print" "(" Expression ")"
+  CompareExpr = AddExpr (CompareOp AddExpr)*
 
-  Expression = StringLiteral
-             | NumberLiteral
-             | BooleanLiteral
-             | identifier
-             | FunctionCall
-             | BinaryExpr
-             | ParenExpr
-             | FString
+  AddExpr = MulExpr (AddOp MulExpr)*
 
-  StringLiteral = "\"" (~"\"" any)* "\""
+  MulExpr = UnaryExpr (MulOp UnaryExpr)*
 
-  NumberLiteral = digit+ ("." digit+)?
+  UnaryExpr = PrefixOp? PostfixExpr
 
-  BooleanLiteral = "True" | "False"
+  PostfixExpr = PrimaryExpr (DotOp | CallOp)*
 
-  BinaryExpr = Expression ("+"|"-"|"*"|"/"|"=="|"!="|">"|"<"|">="|"<=") Expression
+  DotOp = "." identifier
+  CallOp = "(" ArgList? ")"
 
-  ParenExpr = "(" Expression ")"
+  PrimaryExpr = ParenExpr
+              | ListLit
+              | DictLit
+              | identifier
+              | number
+              | string
+              | BooleanLit
+              | "None"
 
-  FString = "f" StringLiteral
+  ParenExpr = "(" Expr ")"
 
-  identifier = letter (letter | digit | "_")*
+  BooleanLit = "True" | "False"
+
+  ArgList = (NamedArg | Expr) ("," (NamedArg | Expr))*
+
+  NamedArg = identifier "=" Expr
+
+  ListLit = "[" ListItems? "]"
+  ListItems = Expr ("," Expr)*
+
+  DictLit = "{" DictItems? "}"
+  DictItems = DictItem ("," DictItem)*
+  DictItem = Expr ":" Expr
+
+  Type = BasicType
+       | ListType
+       | DictType
+       | UnionType
+       | identifier
+
+  BasicType = "str" | "int" | "float" | "bool"
+  ListType = "list" "[" Type "]"
+  DictType = "dict" "[" Type "," Type "]"
+  UnionType = Type "|" Type
+
+  CompareOp = "==" | "!=" | "<" | "<=" | ">" | ">="
+  AddOp = "+" | "-"
+  MulOp = "*" | "/"
+  PrefixOp = "-" | "not"
+
+  number = digit+ ("." digit+)?
+  string = "\"" (~"\"" any)* "\""
+         | "'" (~"'" any)* "'"
+         | "f\"" (~"\"" any)* "\""
+         | "f'" (~"'" any)* "'"
+
+  identifier = letter (alnum | "_")*
 
   space += comment
   comment = "#" (~"\n" any)* "\n"
