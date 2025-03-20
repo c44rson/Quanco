@@ -12,7 +12,7 @@ One evening after a challenging and rather cumbersome Loyola Rugby practice in S
 * Class and Function arguments can be listed in order or by a given argument name.
 * No semicolons :).
 * function = ruck
-* Class = pitch
+* struct = pitch
 * return = pass
 
 ## Example Programs
