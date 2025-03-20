@@ -58,7 +58,7 @@ const syntaxChecks = [
   [
     "if-else statements",
     `
-        ruck check(x: int):
+        ruck check(x: int) -> str:
             if x > 0:
                 pass "positive"
             else:

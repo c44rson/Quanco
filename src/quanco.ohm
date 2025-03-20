@@ -1,21 +1,10 @@
 Quanco {
-  Program = (TopLevel | space)*
-
-  TopLevel = ClassDef | FunctionDef
-
-  ClassDef = "pitch" identifier ":" Block
-
-  FunctionDef = "ruck" identifier "(" Params? ")" ReturnType? ":" Block
-
-  Block = Statement+
-
-  Params = Param ("," Param)*
-  Param = identifier ":" Type ("=" Expr)?
-
-  ReturnType = "->" Type
+  Program = (Statement | space)*
 
   Statement = VarDecl
             | Assignment
+            | TypeDecl
+            | FunctionDef
             | ForLoop
             | WhileLoop
             | IfStmt
@@ -25,16 +14,31 @@ Quanco {
   VarDecl = identifier ":" Type ("=" Expr)?
 
   Assignment = LValue "=" Expr
+  
+  TypeDecl = pitch identifier Block
+
+  FunctionNoReturn = ruck __init__ "(" Params? ")" Block
+
+  FunctionDef = ruck ~__init__ identifier "(" Params? ")" ReturnType Block --funcDef
+              | FunctionNoReturn
+
+  Block = "{" Statement+ "}"
+
+  Params = Param ("," Param)*
+  Param = ~self identifier ":" Type ("=" Expr)? -- regParam
+        | self
+
+  ReturnType = "->" Type
 
   LValue = identifier ("." identifier)*
 
-  ForLoop = "for" identifier "in" Expr ":" Block
+  ForLoop = "for" identifier "in" Expr Block
 
-  WhileLoop = "while" Expr ":" Block
+  WhileLoop = "while" Expr Block
 
-  IfStmt = "if" Expr ":" Block
-           ("elif" Expr ":" Block)*
-           ("else" ":" Block)?
+  IfStmt = "if" Expr Block
+           ("elif" Expr Block)*
+           ("else" Block)?
 
   ReturnStmt = "pass" Expr?
 
@@ -105,8 +109,19 @@ Quanco {
          | "f\"" (~"\"" any)* "\""
          | "f'" (~"'" any)* "'"
 
-  identifier = letter (alnum | "_")*
+  identifier = ~keyword (letter | "_") (alnum | "_")* -- regID
+             | this "." identifier                 -- dotID
 
   space += comment
   comment = "#" (~"\n" any)* "\n"
+
+  pitch = "pitch" ~alnum
+  ruck = "ruck" ~alnum
+  __init__ = "__init__" ~alnum
+  main = "main" ~alnum
+  self = "self" ~alnum
+  this = "this" ~alnum
+
+  keyword = pitch | ruck | this
+
 }

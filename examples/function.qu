@@ -1,10 +1,8 @@
-ruck greet(name: str) -> str:
+ruck greet(name: str) -> str {
     pass "Try hard, " + name + "! Keep rucking!"
+}
 
-ruck main():
-    result: str = greet("Julian")
-    print(result)
-    result: str = greet(name="Carson")
-    print(result)
-
-main()
+result: str = greet("Julian")
+print(result)
+result: str = greet(name="Carson")
+print(result)

@@ -1,11 +1,11 @@
-ruck lineout(depth: int) -> int:
-    if depth == 0:
+ruck lineout(depth: int) -> int {
+    if depth == 0 {
         pass 1
-    else:
+    }
+    else {
         pass depth * lineout(depth - 1)
+    }
+}
 
-ruck main():
-    result: int = lineout(5)
-    print(result)
-
-main()
+result: int = lineout(5)
+print(result)

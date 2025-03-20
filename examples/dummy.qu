@@ -1,0 +1,4 @@
+x: int = 5
+name: str = "Julian"
+active: bool = True
+rate: float = 3.14

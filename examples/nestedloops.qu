@@ -1,8 +1,11 @@
-ruck scrum():
+ruck scrum() -> void {
     phase: int
     tackle: int
-    for phase in range(1, 4):
-        for tackle in range(1, 4):
-            print(f"Phase {phase}, Tackle {tackle}: Drive forward!")
+    for phase in range(1, 4) {
+        for tackle in range(1, 4) {
+            print("Phase " + phase + ", Tackle " + tackle + " : Drive forward!")
+        }
+    }
+}
 
 scrum()
