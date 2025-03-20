@@ -1,20 +1,16 @@
 <img src="https://github.com/c44rson/Quanco/blob/main/docs/QuancoLogo.png" alt="Quanco Logo" width="400" height="400">
 
 # Quanco
-A language for the intersection of Rugby fans, and those who love Java programming, but hate its verbosity.
+A language for the intersection of Rugby fans, and those who love general-purpose scripting languages, like Python and TypeScript.
 
 ## Our Story
-One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use parentheses and curly brackets, slowing them down immensely. During this time of extreme peril, a genius idea came to them. What if we make Java, without all the tedious things that make it impossible to have a positive programming experience without Adderall? And Rugby syntax, just cuz.
+One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use parentheses and curly brackets, slowing them down immensely. During this time of extreme peril, a genius idea came to them. Why would anyone want to use Java for anything? Unable to remember the syntax of Python or TypeScript, they made a language that spoke to them.
 
 ## Notable Features
-* Strong typing is encouraged, but type inference is available for all variables.
-* All "main" functions have their public, static, and void nature inferred.
-* "for" and "while" loops use Pythonic pattern matching and range-style looping.
-* All Loops and Classes do not have curly braces, and instead use :.
-* Class and Function argument types adopt Python conventions (arg_name: arg_type).
+* Block statements use curly braces.
+* Language is statically typed.
 * Class and Function arguments can be listed in order or by a given argument name.
-* No need for ; on every line.
-* Indentation is forced, think Python conventions.
+* No semicolons :).
 * function = ruck
 * Class = pitch
 * return = pass
