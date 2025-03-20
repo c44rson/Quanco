@@ -19,16 +19,14 @@ One evening after a challenging and rather cumbersome Loyola Rugby practice in S
 ### Defining and Calling a Function
 Quanco:
 ```
-ruck greet(name: str) -> str:
+ruck greet(name: str) -> str {
     pass "Try hard, " + name + "! Keep rucking!"
+}
 
-ruck main():
-    result: str = greet("Julian")
-    print(result)
-    result: str = greet(name="Carson")
-    print(result)
-
-main()
+result: str = greet("Julian")
+print(result)
+result: str = greet(name="Carson")
+print(result)
 ```
 JavaScript:
 ```
@@ -47,12 +45,15 @@ main();
 ### Nested Loops
 Quanco:
 ```
-ruck scrum():
+ruck scrum() -> void {
     phase: int
     tackle: int
-    for phase in range(1, 4):
-        for tackle in range(1, 4):
-            print(f"Phase {phase}, Tackle {tackle}: Drive forward!")
+    for phase in range(1, 4) {
+        for tackle in range(1, 4) {
+            print("Phase " + phase + ", Tackle " + tackle + " : Drive forward!")
+        }
+    }
+}
 
 scrum()
 ```
@@ -71,17 +72,17 @@ scrum();
 ### Recursion
 Quanco:
 ```
-ruck lineout(depth: int) -> int:
-    if depth == 0:
+ruck lineout(depth: int) -> int {
+    if depth == 0 {
         pass 1
-    else:
+    }
+    else {
         pass depth * lineout(depth - 1)
+    }
+}
 
-ruck main():
-    result: int = lineout(5)
-    print(result)  # Output: 120
-
-main()
+result: int = lineout(5)
+print(result)
 ```
 JavaScript:
 ```
@@ -103,14 +104,16 @@ main();
 ### Lists and Dictionaries
 Quanco:
 ```
-ruck maul():
+ruck maul() -> void {
     players: list[str] = ["Julian", "Carson", "Ray"]
-    positions: dict[str, str] = {"Julian": "Flyhalf", "Carson": "Scrumhalf", "Ray": "Coach"}
+    positions: dict[str, str] = {"Julian": "Flanker", "Carson": "Scrumhalf", "Ray": "Coach"}
     player: str
 
-    for player in players:
+    for player in players {
         position: str = positions.get(player, "sin bin")
-        print(f"{player} is in the {position} position")
+        print(player + " is in the " + position + " position")
+    }
+}
 
 maul()
 ```
@@ -131,25 +134,25 @@ maul();
 ### Structs and Classes
 Quanco:
 ```
-pitch RugbyPlayer:
-    ruck __init__(self, name: str, position: str, tries: int = 0):
-        self.name: str = name
-        self.position: str = position
-        self.tries: int = tries
+pitch RugbyPlayer {
+    ruck __init__(self, name: str, position: str, tries: int = 0) {
+        this.name: str = name
+        this.position: str = position
+        this.tries: int = tries
+    }
 
-    ruck scoreTry(self):
-        self.tries += 1
-        print(f"{self.name} scored a try! Total tries: {self.tries}")
+    ruck scoreTry(self) -> void {
+        this.tries = 1
+        print(this.name + "scored a try! Total tries: " + this.tries)
+    }
+}
 
-ruck main():
-    optionalPlayer: RugbyPlayer | None = None
-    player1: RugbyPlayer = RugbyPlayer("Julian", "Flyhalf")
-    player1.scoreTry()
+optionalPlayer: RugbyPlayer | None = None
+player1: RugbyPlayer = RugbyPlayer("Julian", "Flanker")
+player1.scoreTry()
 
-    optionalPlayer = RugbyPlayer("Carson", "Scrumhalf")
-    optionalPlayer.scoreTry()
-
-main()
+optionalPlayer = RugbyPlayer("Carson", "Scrumhalf")
+optionalPlayer.scoreTry()
 ```
 JavaScript:
 ```
