@@ -1,14 +1,14 @@
 Quanco {
   Program = (Statement | space)*
 
-  Statement = VarDecl
-            | Assignment
-            | TypeDecl
+  Statement = TypeDecl
             | FunctionDef
             | ForLoop
             | WhileLoop
             | IfStmt
             | ReturnStmt
+            | VarDecl
+            | Assignment
             | ExprStmt
             
   Block = "{" Statement+ "}"
@@ -112,7 +112,6 @@ Quanco {
   pitch = "pitch" ~alnum
   ruck = "ruck" ~alnum
   __init__ = "__init__" ~alnum
-  main = "main" ~alnum
   self = "self" ~alnum
   this = "this" ~alnum
   true = "True" ~alnum
