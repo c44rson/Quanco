@@ -5,7 +5,7 @@ ruck maul() -> void {
 
     for player in players {
         position: str = positions.get(player, "sin bin")
-        print(player + " is in the " + position + " position")
+        print(f"The {player} is in the {position} position")
     }
 }
 

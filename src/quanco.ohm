@@ -66,9 +66,9 @@ Quanco {
   PrimaryExpr = ParenExpr
               | ListLit
               | DictLit
+              | string
               | identifier
               | number
-              | string
               | BooleanLit
               | "None"
 
