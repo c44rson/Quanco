@@ -32,15 +32,15 @@ Quanco {
 
   LValue = identifier ("." identifier)*
 
-  ForLoop = "for" identifier "in" Expr Block
+  ForLoop = for identifier in Expr Block
 
-  WhileLoop = "while" Expr Block
+  WhileLoop = while Expr Block
 
-  IfStmt = "if" Expr Block
-           ("elif" Expr Block)*
-           ("else" Block)?
+  IfStmt = if Expr Block
+           (elif Expr Block)*
+           (else Block)?
 
-  ReturnStmt = "pass" Expr?
+  ReturnStmt = pass Expr?
 
   ExprStmt = Expr
 
@@ -118,8 +118,15 @@ Quanco {
   true = "True" ~alnum
   false = "False" ~alnum
   none = "None" ~alnum
+  pass = "pass" ~alnum
+  for = "for" ~alnum
+  in = "in" ~alnum
+  while = "while" ~alnum
+  if = "if" ~alnum
+  elif = "elif" ~alnum
+  else = "else" ~alnum
 
-  keyword = pitch | ruck | this | true | false | none
+  keyword = pitch | ruck | pass | for | in | if | elif | else | this | true | false | none
   
   identifier = ~keyword (letter | "_") (alnum | "_")* --commonID
   			 | this "." identifier                        --classID
