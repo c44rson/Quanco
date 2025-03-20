@@ -10,6 +10,8 @@ Quanco {
             | IfStmt
             | ReturnStmt
             | ExprStmt
+            
+  Block = "{" Statement+ "}"
 
   VarDecl = identifier ":" Type ("=" Expr)?
 
@@ -17,12 +19,10 @@ Quanco {
   
   TypeDecl = pitch identifier Block
 
-  FunctionNoReturn = ruck __init__ "(" Params? ")" Block
-
   FunctionDef = ruck ~__init__ identifier "(" Params? ")" ReturnType Block --funcDef
               | FunctionNoReturn
-
-  Block = "{" Statement+ "}"
+              
+  FunctionNoReturn = ruck __init__ "(" Params? ")" Block
 
   Params = Param ("," Param)*
   Param = ~self identifier ":" Type ("=" Expr)? -- regParam
@@ -70,11 +70,11 @@ Quanco {
               | identifier
               | number
               | BooleanLit
-              | "None"
+              | none
 
   ParenExpr = "(" Expr ")"
 
-  BooleanLit = "True" | "False"
+  BooleanLit = true | false
 
   ArgList = (NamedArg | Expr) ("," (NamedArg | Expr))*
 
@@ -87,13 +87,13 @@ Quanco {
   DictItems = DictItem ("," DictItem)*
   DictItem = Expr ":" Expr
 
-  Type = BasicType
+  Type = UnionType
        | ListType
        | DictType
-       | UnionType
+       | BasicType
        | identifier
 
-  BasicType = "str" | "int" | "float" | "bool"
+  BasicType = "str" | "int" | "float" | "bool" | none
   ListType = "list" "[" Type "]"
   DictType = "dict" "[" Type "," Type "]"
   UnionType = Type "|" Type
@@ -109,19 +109,22 @@ Quanco {
          | "f\"" (~"\"" any)* "\""
          | "f'" (~"'" any)* "'"
 
-  identifier = ~keyword (letter | "_") (alnum | "_")* -- regID
-             | this "." identifier                 -- dotID
-
-  space += comment
-  comment = "#" (~"\n" any)* "\n"
-
   pitch = "pitch" ~alnum
   ruck = "ruck" ~alnum
   __init__ = "__init__" ~alnum
   main = "main" ~alnum
   self = "self" ~alnum
   this = "this" ~alnum
+  true = "True" ~alnum
+  false = "False" ~alnum
+  none = "None" ~alnum
 
-  keyword = pitch | ruck | this
+  keyword = pitch | ruck | this | true | false | none
+  
+  identifier = ~keyword (letter | "_") (alnum | "_")* --commonID
+  			 | this "." identifier                        --classID
+
+  space += comment
+  comment = "#" (~"\n" any)* "\n"
 
 }
