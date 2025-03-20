@@ -1,38 +1,32 @@
 <img src="https://github.com/c44rson/Quanco/blob/main/docs/QuancoLogo.png" alt="Quanco Logo" width="400" height="400">
 
 # Quanco
-A language for the intersection of Rugby fans, and those who love Java programming, but hate its verbosity.
+A language for the intersection of Rugby fans, and those who love general-purpose scripting languages, like Python and TypeScript.
 
 ## Our Story
-One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use parentheses and curly brackets, slowing them down immensely. During this time of extreme peril, a genius idea came to them. What if we make Java, without all the tedious things that make it impossible to have a positive programming experience without Adderall? And Rugby syntax, just cuz.
+One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use parentheses and curly brackets, slowing them down immensely. During this time of extreme peril, a genius idea came to them. Why would anyone want to use Java for anything? Unable to remember the syntax of Python or TypeScript, they made a language that spoke to them.
 
 ## Notable Features
-* Strong typing is encouraged, but type inference is available for all variables.
-* All "main" functions have their public, static, and void nature inferred.
-* "for" and "while" loops use Pythonic pattern matching and range-style looping.
-* All Loops and Classes do not have curly braces, and instead use :.
-* Class and Function argument types adopt Python conventions (arg_name: arg_type).
+* Block statements use curly braces.
+* Language is statically typed.
 * Class and Function arguments can be listed in order or by a given argument name.
-* No need for ; on every line.
-* Indentation is forced, think Python conventions.
+* No semicolons :).
 * function = ruck
-* Class = pitch
+* struct = pitch
 * return = pass
 
 ## Example Programs
 ### Defining and Calling a Function
 Quanco:
 ```
-ruck greet(name: str) -> str:
+ruck greet(name: str) -> str {
     pass "Try hard, " + name + "! Keep rucking!"
+}
 
-ruck main():
-    result: str = greet("Julian")
-    print(result)
-    result: str = greet(name="Carson")
-    print(result)
-
-main()
+result: str = greet("Julian")
+print(result)
+result: str = greet(name="Carson")
+print(result)
 ```
 JavaScript:
 ```
@@ -51,12 +45,15 @@ main();
 ### Nested Loops
 Quanco:
 ```
-ruck scrum():
+ruck scrum() -> void {
     phase: int
     tackle: int
-    for phase in range(1, 4):
-        for tackle in range(1, 4):
-            print(f"Phase {phase}, Tackle {tackle}: Drive forward!")
+    for phase in range(1, 4) {
+        for tackle in range(1, 4) {
+            print("Phase " + phase + ", Tackle " + tackle + " : Drive forward!")
+        }
+    }
+}
 
 scrum()
 ```
@@ -75,17 +72,17 @@ scrum();
 ### Recursion
 Quanco:
 ```
-ruck lineout(depth: int) -> int:
-    if depth == 0:
+ruck lineout(depth: int) -> int {
+    if depth == 0 {
         pass 1
-    else:
+    }
+    else {
         pass depth * lineout(depth - 1)
+    }
+}
 
-ruck main():
-    result: int = lineout(5)
-    print(result)  # Output: 120
-
-main()
+result: int = lineout(5)
+print(result)
 ```
 JavaScript:
 ```
@@ -107,14 +104,16 @@ main();
 ### Lists and Dictionaries
 Quanco:
 ```
-ruck maul():
+ruck maul() -> void {
     players: list[str] = ["Julian", "Carson", "Ray"]
-    positions: dict[str, str] = {"Julian": "Flyhalf", "Carson": "Scrumhalf", "Ray": "Coach"}
+    positions: dict[str, str] = {"Julian": "Flanker", "Carson": "Scrumhalf", "Ray": "Coach"}
     player: str
 
-    for player in players:
+    for player in players {
         position: str = positions.get(player, "sin bin")
-        print(f"{player} is in the {position} position")
+        print(player + " is in the " + position + " position")
+    }
+}
 
 maul()
 ```
@@ -135,25 +134,25 @@ maul();
 ### Structs and Classes
 Quanco:
 ```
-pitch RugbyPlayer:
-    ruck __init__(self, name: str, position: str, tries: int = 0):
-        self.name: str = name
-        self.position: str = position
-        self.tries: int = tries
+pitch RugbyPlayer {
+    ruck __init__(self, name: str, position: str, tries: int = 0) {
+        this.name: str = name
+        this.position: str = position
+        this.tries: int = tries
+    }
 
-    ruck scoreTry(self):
-        self.tries += 1
-        print(f"{self.name} scored a try! Total tries: {self.tries}")
+    ruck scoreTry(self) -> void {
+        this.tries = 1
+        print(this.name + "scored a try! Total tries: " + this.tries)
+    }
+}
 
-ruck main():
-    optionalPlayer: RugbyPlayer | None = None
-    player1: RugbyPlayer = RugbyPlayer("Julian", "Flyhalf")
-    player1.scoreTry()
+optionalPlayer: RugbyPlayer | None = None
+player1: RugbyPlayer = RugbyPlayer("Julian", "Flanker")
+player1.scoreTry()
 
-    optionalPlayer = RugbyPlayer("Carson", "Scrumhalf")
-    optionalPlayer.scoreTry()
-
-main()
+optionalPlayer = RugbyPlayer("Carson", "Scrumhalf")
+optionalPlayer.scoreTry()
 ```
 JavaScript:
 ```
