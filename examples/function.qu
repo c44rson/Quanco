@@ -1,5 +1,5 @@
-ruck greet(name: str) -> str {
-    pass f"Try hard, {name}! Keep rucking!"
+def greet(name: str) -> str {
+    return f"Try hard, {name}! Keep rucking!"
 }
 
 result: str = greet("Julian")

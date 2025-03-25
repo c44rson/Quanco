@@ -1,9 +1,9 @@
-ruck lineout(depth: int) -> int {
+def lineout(depth: int) -> int {
     if depth == 0 {
-        pass 1
+        return 1
     }
     else {
-        pass depth * lineout(depth - 1)
+        return depth * lineout(depth - 1)
     }
 }
 

@@ -9,7 +9,7 @@ const syntaxChecks = [
   [
     "variable declarations",
     `
-        ruck example() -> void {
+        def example() -> void {
           x: int = 5
           name: str = "Julian"
           active: bool = True
@@ -21,8 +21,8 @@ const syntaxChecks = [
   [
     "function with multiple parameters",
     `
-        ruck greet(name: str, age: int = 25) -> str {
-          pass "Hello " + name
+        def greet(name: str, age: int = 25) -> str {
+          return "Hello " + name
         }
     `,
   ],
@@ -30,7 +30,7 @@ const syntaxChecks = [
   [
     "class definition",
     `
-        pitch Player {
+        class Player {
           name: str
         }
     `,
@@ -39,7 +39,7 @@ const syntaxChecks = [
   [
     "for loops",
     `
-        ruck example() -> void {
+        def example() -> void {
           for i in range(10) {
             print(i)
           }
@@ -50,7 +50,7 @@ const syntaxChecks = [
   [
     "while loops",
     `
-        ruck example() -> void {
+        def example() -> void {
           count: int = 0
           while count < 5 {
               print(count)
@@ -62,12 +62,12 @@ const syntaxChecks = [
   [
     "if-else statements",
     `
-        ruck check(x: int) -> str {
+        def check(x: int) -> str {
           if x > 0 {
-            pass "positive"
+            return "positive"
           }
           else {
-            pass "zero"
+            return "zero"
           }
         }
     `,
@@ -76,7 +76,7 @@ const syntaxChecks = [
   [
     "list operations",
     `
-        ruck example() -> void {
+        def example() -> void {
           numbers: list[int] = [1, 2, 3]
           for n in numbers {
             print(n)
@@ -88,7 +88,7 @@ const syntaxChecks = [
   [
     "dictionary operations",
     `
-        ruck example() -> void {
+        def example() -> void {
           scores: dict[str, int] = {"Julian": 10}
           print(scores)
         }
@@ -98,8 +98,8 @@ const syntaxChecks = [
   [
     "simple function",
     `
-        ruck process(value: int) -> int {
-          pass value
+        def process(value: int) -> int {
+          return value
         }
     `,
   ],
@@ -107,7 +107,7 @@ const syntaxChecks = [
   [
     "nested function calls",
     `
-        ruck example() -> void {
+        def example() -> void {
           print(str(len("hello")))
         }
     `,
@@ -116,7 +116,7 @@ const syntaxChecks = [
   [
     "string operations",
     `
-        ruck example() -> void {
+        def example() -> void {
           name: str = "Julian"
           print("Hello " + name)
         }
@@ -130,16 +130,16 @@ const syntaxErrors = [
 
   ["invalid tokens", "123 456 +++", /Expected/],
 
-  ["mismatched parentheses", "ruck main() { ((()) }", /Expected/],
+  ["mismatched parentheses", "def main() { ((()) }", /Expected/],
 
-  ["invalid characters in identifier", "ruck @#$() { pass }", /Expected/],
+  ["invalid characters in identifier", "def @#$() { return }", /Expected/],
 
-  ["missing required components", "ruck { pass }", /Expected/],
+  ["missing required components", "def { return }", /Expected/],
 
   [
     "invalid nesting",
-    `ruck main() {
-      ruck inner() {
+    `def main() {
+      def inner() {
       }
     }`,
     /Expected/,
@@ -147,7 +147,7 @@ const syntaxErrors = [
 
   [
     "invalid operator usage",
-    `ruck main(){
+    `def main(){
       x = +++5
     }`,
     /Expected/,
@@ -155,7 +155,7 @@ const syntaxErrors = [
 
   [
     "invalid type declaration",
-    `ruck main() {
+    `def main() {
       x: @invalid
     }`,
     /Expected/,
@@ -163,14 +163,14 @@ const syntaxErrors = [
 
   [
     "invalid block structure",
-    `ruck main()
+    `def main()
          print("no colon")`,
     /Expected/,
   ],
 
   [
     "invalid statement termination",
-    `ruck main() {
+    `def main() {
       print("test");;;
     }`,
     /Expected/,

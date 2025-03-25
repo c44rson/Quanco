@@ -14,8 +14,12 @@ export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
 }
 
-export function variable(name, type) {
-  return { kind: "Variable", name, type };
+export function variable(name, mutable, type) {
+  return { kind: "Variable", name, mutable, type };
+}
+
+export function typeDeclaration(type) {
+  return { kind: "TypeDeclaration", type };
 }
 
 export function structType(name, fields) {
@@ -24,6 +28,10 @@ export function structType(name, fields) {
 
 export function field(name, type) {
   return { kind: "Field", name, type };
+}
+
+export function functionDeclaration(fun) {
+  return { kind: "FunctionDeclaration", fun };
 }
 
 export function fun(name, params, body, type) {
@@ -86,6 +94,15 @@ export function binary(op, left, right, type) {
 
 export function emptyOptional(baseType) {
   return { kind: "EmptyOptional", baseType, type: optionalType(baseType) };
+}
+
+export function subscript(array, index) {
+  return {
+    kind: "SubscriptExpression",
+    array,
+    index,
+    type: array.type.baseType,
+  };
 }
 
 export function arrayExpression(elements) {

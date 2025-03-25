@@ -1,11 +1,11 @@
-pitch RugbyPlayer {
-    ruck __init__(self, name: str, position: str, tries: int = 0) {
+class RugbyPlayer {
+    def __init__(self, name: str, position: str, tries: int = 0) {
         this.name: str = name
         this.position: str = position
         this.tries: int = tries
     }
 
-    ruck scoreTry(self) -> void {
+    def scoreTry(self) -> void {
         this.tries = 1
         print(this.name + "scored a try! Total tries: " + this.tries)
     }
