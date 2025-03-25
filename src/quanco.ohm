@@ -1,7 +1,7 @@
 Quanco {
   Program = (Statement | space)*
 
-  Statement = TypeDecl
+  Statement = TypeDef
             | FunctionDef
             | ForLoop
             | WhileLoop
@@ -17,7 +17,7 @@ Quanco {
 
   Assignment = LValue "=" Expr
   
-  TypeDecl = pitch identifier Block
+  TypeDef = pitch identifier Block
 
   FunctionDef = ruck ~__init__ identifier "(" Params? ")" ReturnType Block --funcDef
               | FunctionNoReturn
@@ -28,7 +28,7 @@ Quanco {
   Param = ~self identifier ":" Type ("=" Expr)? -- regParam
         | self
 
-  ReturnType = "->" Type
+  ReturnType = "->" (Type | void)
 
   LValue = identifier ("." identifier)*
 
@@ -124,11 +124,12 @@ Quanco {
   if = "if" ~alnum
   elif = "elif" ~alnum
   else = "else" ~alnum
+  void = "void" ~alnum
 
-  keyword = pitch | ruck | pass | for | in | if | elif | else | this | true | false | none
+  keyword = pitch | ruck | pass | for | in | if | elif | else | this | true | false | none | void
   
   identifier = ~keyword (letter | "_") (alnum | "_")* --commonID
-  			 | this "." identifier                        --classID
+  			     | this "." identifier                        --classID
 
   space += comment
   comment = "#" (~"\n" any)* "\n"
