@@ -43,6 +43,10 @@ class Student {
             return false
         }
     }
+
+    def describeMyself(self) -> void {
+        print(f"Hi my name is {self.name}! I am {self.age} years old! My gpa is {self.gpa}. It is {self.passing} that I am passing!")
+    }
 }
 
 student1: Student = Student("Carson", 20, 3.81)
