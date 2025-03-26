@@ -29,7 +29,7 @@ Quanco {
 
   LValue = identifier ("." identifier)*
 
-  ForLoop = for "(" VarDecl "," ExprStmt "," ExprStmt ")" Block --expressionOrientedLoop
+  ForLoop = for VarDecl "," ExprStmt "," ExprStmt Block --expressionOrientedLoop
           | for identifier in Expr Block                        --membershipLoop
 
   WhileLoop = while Expr Block
@@ -104,7 +104,7 @@ Quanco {
   DictType = "dict" "[" Type "," Type "]"
   UnionType = Type "|" Type
 
-  CompareOp = "==" | "!=" | "<" | "<=" | ">" | ">="
+  CompareOp = "==" | "!=" | "<=" | "<" | ">=" | ">"
   AddOp = "+" | "-"
   MulOp = "*" | "/"
   PrefixOp = unaryInc | unaryDec | "-" | "not"
