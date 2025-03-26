@@ -54,3 +54,5 @@ student2: Student | none = Student("Julian", 21, 1.99)
 
 studentList: list[Student] = [student1, student2]
 carsonDict: dict[str, int] = {student1.name: student1.age}
+
+carson: Student = studentList[0]

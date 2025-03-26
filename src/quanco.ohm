@@ -64,10 +64,11 @@ Quanco {
 
   UnaryExpr = PrefixOp* PostfixExpr PostfixOp*
 
-  PostfixExpr = PrimaryExpr (DotOp | CallOp)*
+  PostfixExpr = PrimaryExpr (DotOp | CallOp | AccessOp)*
 
   DotOp = "." identifier
   CallOp = "(" ArgList? ")"
+  AccessOp = "[" number (":" number)? "]"
 
   PrimaryExpr = ParenExpr
               | ListLit
