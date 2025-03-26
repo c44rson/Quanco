@@ -1,0 +1,52 @@
+class Student {
+    def __init__(self, name: str, age: int, gpa: float) {
+        readonly this.name: str = name
+        this.age: int = age
+        this.gpa: float = gpa
+        this.passing: bool
+        if this.gpa > 2.0 {
+            this.passing = true
+        }
+        else {
+            this.passing = false
+        }
+    }
+
+    def doubleGPA(self) -> void {
+        this.gpa = this.gpa * 2
+    }
+
+    def isPassing(self) -> bool {
+        return this.passing
+    }
+    
+    def getOlder(self, years: int) -> void {
+        ++self.age--
+        for i: int = 0, i < years, i++ {
+            self.age += 1
+        }
+        j: int = (0 * 0) / 1
+        # does nothing fyi
+        while j < 10 and (true or false) {
+            j += 10E1e1
+        }
+    }
+
+    def isValedictorian(self) -> bool {
+        if self.gpa == 4.0 {
+            return true
+        }
+        elif self.gpa == 0.0 { 
+            return false
+        }
+        else {
+            return false
+        }
+    }
+}
+
+student1: Student = Student("Carson", 20, 3.81)
+student2: Student | none = Student("Julian", 21, 1.99)
+
+studentList: list[Student] = [student1, student2]
+carsonDict: dict[str, int] = {student1.name: student1.age}
