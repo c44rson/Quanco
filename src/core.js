@@ -143,8 +143,6 @@ export const voidType = "void";
 export const noneType = "none";
 export const anyType = "any";
 
-const floatToFloatType = functionType([floatType], floatType);
-const floatFloatToFloatType = functionType([floatType, floatType], floatType);
 const anyToVoidType = functionType([anyType], voidType);
 
 // STD LIBRARY
@@ -157,12 +155,6 @@ export const standardLibrary = Object.freeze({
   none: noneType,
   any: anyType,
   print: intrinsicFunction("print", anyToVoidType),
-  sqrt: intrinsicFunction("sqrt", floatToFloatType),
-  sin: intrinsicFunction("sin", floatToFloatType),
-  cos: intrinsicFunction("cos", floatToFloatType),
-  exp: intrinsicFunction("exp", floatToFloatType),
-  ln: intrinsicFunction("ln", floatToFloatType),
-  hypot: intrinsicFunction("hypot", floatFloatToFloatType),
 });
 
 String.prototype.type = stringType;
