@@ -16,7 +16,90 @@ const semanticChecks = [
     `readonly x: int
      y: str`,
   ],
-  [],
+  [
+    "variable assignments",
+    `readonly y: int = 0
+     z: str = "0"
+     a: bool = true
+     b: float = 0.0
+     c: none = none`,
+  ],
+  [
+    "function without parameters",
+    `def f() -> void {
+        return
+     }`,
+  ],
+  ["function with parameters"],
+  [
+    "void function",
+    `def f(x: bool) -> void {
+        return
+     }`,
+  ],
+  [
+    "non-void function",
+    `def f(x: int) -> int {
+        return x
+     }`,
+  ],
+  [
+    "class without constructor",
+    `class c {
+        this.x = 1
+     }`,
+  ],
+  [
+    "class with constructor",
+    `class d {
+        def __init__(self, x: bool) {
+            this.valid = x
+        }
+     }`,
+  ],
+  [
+    "class with method",
+    `class d {
+        def __init__(self, x: bool) {
+            this.valid = x
+        }
+        def flipValid(self) -> void {
+            this.valid = not this.valid
+        }
+     }`,
+  ],
+  [
+    "accessing class fields outside class",
+    `class d {
+        def __init__(self, x: bool) {
+            this.valid = x
+        }
+        def flipValid(self) -> void {
+            this.valid = not this.valid
+        }
+     }
+     example: d = d(true)
+     variable: bool = d.valid`,
+  ],
+  [
+    "breaking for loop",
+    `for i: int = 0, i < 5, i++ {
+        if i == 2 {
+            break
+        }
+     }`,
+  ],
+  [
+    "breaking while loop",
+    `j: int = 0
+     while j <= 20 {
+        if j == 10 {
+            break
+        }
+        j += 2
+     }`,
+  ],
+  ["union type", ``],
 ];
 const semanticErrors = [
   [
@@ -55,7 +138,7 @@ const semanticErrors = [
         x: int = 0
      }
      x += 2`,
-    /Cannot access local variables outside function/,
+    /Variable must be redeclared outside scope/,
   ],
   ["break outside function", `break`, /break cannot be used outside loop/],
   [
