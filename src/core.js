@@ -3,8 +3,8 @@ export function program(statements) {
   return { kind: "Program", statements };
 }
 
-export function classDeclaration(name, fields) {
-  return { kind: "ClassDeclaration", name, fields };
+export function classDeclaration(type) {
+  return { kind: "ClassDeclaration", type };
 }
 
 export function field(name, type) {
@@ -25,10 +25,6 @@ export function variableDeclaration(variable, initializer) {
 
 export function variable(readonly, name, type) {
   return { kind: "Variable", readonly, name, type };
-}
-
-export function typeDeclaration(type) {
-  return { kind: "TypeDeclaration", type };
 }
 
 // STATEMENTS
@@ -107,6 +103,10 @@ export function unary(op, operand, type) {
 }
 
 // TYPES
+export function classType(name, fields) {
+  return { kind: "ClassType", name, fields };
+}
+
 export function functionType(paramTypes, returnType) {
   return { kind: "FunctionType", paramTypes, returnType };
 }
