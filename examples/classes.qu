@@ -11,7 +11,7 @@ class RugbyPlayer {
     }
 }
 
-optionalPlayer: RugbyPlayer | None = None
+optionalPlayer: RugbyPlayer | none = none
 player1: RugbyPlayer = RugbyPlayer("Julian", "Flanker")
 player1.scoreTry()
 

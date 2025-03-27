@@ -12,7 +12,7 @@ const syntaxChecks = [
         def example() -> void {
             x: int = 5
             name: str = "Julian"
-            active: bool = True
+            active: bool = true
             rate: float = 3.14
         }
     `,

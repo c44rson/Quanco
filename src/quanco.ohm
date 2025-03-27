@@ -124,9 +124,9 @@ Quanco {
   __init__ = "__init__" ~alnum
   self = "self" ~alnum
   this = "this" ~alnum
-  true = "True" ~alnum
-  false = "False" ~alnum
-  none = "None" ~alnum
+  true = "true" ~alnum
+  false = "false" ~alnum
+  none = "none" ~alnum
   return = "return" ~alnum
   for = "for" ~alnum
   in = "in" ~alnum
