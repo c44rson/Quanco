@@ -10,10 +10,10 @@ const syntaxChecks = [
     "variable declarations",
     `
         def example() -> void {
-          x: int = 5
-          name: str = "Julian"
-          active: bool = True
-          rate: float = 3.14
+            x: int = 5
+            name: str = "Julian"
+            active: bool = True
+            rate: float = 3.14
         }
     `,
   ],
@@ -22,7 +22,7 @@ const syntaxChecks = [
     "function with multiple parameters",
     `
         def greet(name: str, age: int = 25) -> str {
-          return "Hello " + name
+            return "Hello " + name
         }
     `,
   ],
@@ -31,7 +31,7 @@ const syntaxChecks = [
     "class definition",
     `
         class Player {
-          name: str
+            name: str
         }
     `,
   ],
@@ -40,9 +40,9 @@ const syntaxChecks = [
     "for loops",
     `
         def example() -> void {
-          for i in range(10) {
-            print(i)
-          }
+            for i in range(10) {
+                print(i)
+            }
         }
     `,
   ],
@@ -51,10 +51,10 @@ const syntaxChecks = [
     "while loops",
     `
         def example() -> void {
-          count: int = 0
-          while count < 5 {
-              print(count)
-          }
+            count: int = 0
+            while count < 5 {
+                print(count)
+            }
         }
     `,
   ],
@@ -63,12 +63,12 @@ const syntaxChecks = [
     "if-else statements",
     `
         def check(x: int) -> str {
-          if x > 0 {
-            return "positive"
-          }
-          else {
-            return "zero"
-          }
+            if x > 0 {
+                return "positive"
+            }
+            else {
+                return "zero"
+            }
         }
     `,
   ],
@@ -77,10 +77,10 @@ const syntaxChecks = [
     "list operations",
     `
         def example() -> void {
-          numbers: list[int] = [1, 2, 3]
-          for n in numbers {
-            print(n)
-          }
+            numbers: list[int] = [1, 2, 3]
+            for n in numbers {
+                print(n)
+            }
         }
     `,
   ],
@@ -89,8 +89,8 @@ const syntaxChecks = [
     "dictionary operations",
     `
         def example() -> void {
-          scores: dict[str, int] = {"Julian": 10}
-          print(scores)
+            scores: dict[str, int] = {"Julian": 10}
+            print(scores)
         }
     `,
   ],
@@ -99,7 +99,7 @@ const syntaxChecks = [
     "simple function",
     `
         def process(value: int) -> int {
-          return value
+            return value
         }
     `,
   ],
@@ -108,7 +108,7 @@ const syntaxChecks = [
     "nested function calls",
     `
         def example() -> void {
-          print(str(len("hello")))
+            print(str(len("hello")))
         }
     `,
   ],
@@ -117,8 +117,8 @@ const syntaxChecks = [
     "string operations",
     `
         def example() -> void {
-          name: str = "Julian"
-          print("Hello " + name)
+            name: str = "Julian"
+            print("Hello " + name)
         }
     `,
   ],

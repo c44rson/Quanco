@@ -10,7 +10,14 @@ import {
   floatType,
 } from "../src/core.js";
 
-const semanticChecks = [];
+const semanticChecks = [
+  [
+    "variable declarations",
+    `readonly x: int
+     y: str`,
+  ],
+  [],
+];
 const semanticErrors = [
   [
     "variable redeclaration",
