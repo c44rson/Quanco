@@ -16,20 +16,20 @@ export function fun(name, params, body, type) {
 }
 
 export function boxFunction(name, type) {
-  return { kind: "Function", name, type, intrinsic: true };
+  return { kind: "Function", name, type, box: true };
 }
 
 export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
 }
 
-export function variable(readonly, name, type) {
-  return { kind: "Variable", readonly, name, type };
+export function variable(name, readonly, type) {
+  return { kind: "Variable", name, readonly, type };
 }
 
 // STATEMENTS
 export function functionCall(callee, args) {
-  if (callee.intrinsic) {
+  if (callee.box) {
     if (callee.type.returnType === voidType) {
       return {
         kind: callee.name.replace(/^\p{L}/u, (c) => c.toUpperCase()),
@@ -144,6 +144,7 @@ export const noneType = "none";
 export const anyType = "any";
 
 const anyToVoidType = functionType([anyType], voidType);
+const anyToIntType = functionType([anyType], intType);
 
 // STD LIBRARY
 export const standardLibrary = Object.freeze({
@@ -154,7 +155,8 @@ export const standardLibrary = Object.freeze({
   void: voidType,
   none: noneType,
   any: anyType,
-  print: intrinsicFunction("print", anyToVoidType),
+  print: boxFunction("print", anyToVoidType),
+  len: boxFunction("print", anyToIntType),
 });
 
 String.prototype.type = stringType;
