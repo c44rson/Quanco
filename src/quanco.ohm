@@ -27,7 +27,7 @@ Quanco {
 
   ReturnType = "->" (Type | void)
 
-  LValue = identifier ("." identifier)*
+  LValue = (this ".")? identifier ("." identifier)*
 
   ForLoop = for VarDecl "," ExprStmt "," ExprStmt Block --expressionOrientedLoop
           | for identifier in Expr Block                        --membershipLoop
@@ -42,7 +42,7 @@ Quanco {
 
   ReturnStmt = return Expr?
 
-  VarDecl = readonly? identifier ":" Type ("=" Expr)?
+  VarDecl = readonly? (this ".")? identifier ":" Type ("=" Expr)?
 
   Assignment = LValue "+=" Expr --incReassignment
              | LValue "-=" Expr --decReassignment
@@ -145,8 +145,7 @@ Quanco {
   keyword = class | def | return | for | in | if | elif | else | this | true | false | none | void | break
           | readonly
   
-  identifier = ~keyword (letter | "_") (alnum | "_")*     --commonID
-  			     | this "." identifier                        --classID
+  identifier = ~keyword (letter | "_") (alnum | "_")*
 
   space += comment
   comment = "#" (~"\n" any)* "\n"
