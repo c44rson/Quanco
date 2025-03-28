@@ -1,8 +1,8 @@
 Quanco {
   Program = (Statement | space)*
 
-  Statement = ClassDef
-            | FunctionDef
+  Statement = ClassDecl
+            | FunctionDecl
             | ForLoop
             | WhileLoop
             | IfStmt
@@ -14,12 +14,12 @@ Quanco {
             
   Block = "{" Statement+ "}"
   
-  ClassDef = class identifier Block
+  ClassDecl = class identifier Block
 
-  FunctionDef = def ~__init__ identifier "(" Params? ")" ReturnType Block --funcDef
-              | FunctionNoReturn
+  FunctionDecl = def ~__init__ identifier "(" Params? ")" ReturnType Block --funcDef
+              | ConstructorDecl
               
-  FunctionNoReturn = def __init__ "(" Params? ")" Block
+  ConstructorDecl = def __init__ "(" Params? ")" Block
 
   Params = Param ("," Param)*
   Param = ~self identifier ":" Type ("=" Expr)? -- regParam
@@ -100,7 +100,7 @@ Quanco {
        | BasicType
        | identifier
 
-  BasicType = "str" | "int" | "float" | "bool" | none
+  BasicType = str | int | float | bool | none
   ListType = "list" "[" Type "]"
   DictType = "dict" "[" Type "," Type "]"
   UnionType = Type "|" Type
@@ -126,6 +126,10 @@ Quanco {
   this = "this" ~alnum
   true = "true" ~alnum
   false = "false" ~alnum
+  str = "str" ~alnum
+  int = "int" ~alnum
+  float = "float" ~alnum
+  bool = "bool" ~alnum
   none = "none" ~alnum
   return = "return" ~alnum
   for = "for" ~alnum
