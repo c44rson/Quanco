@@ -7,24 +7,40 @@ export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function field(name, type) {
-  return { kind: "Field", name, type };
+export function classType(constructor, body) {
+  return { kind: "ClassType", constructor, body };
 }
 
-export function fun(name, params, body, type) {
-  return { kind: "Function", name, params, body, type };
+export function constructorDeclaration(classAffil, params, body, type) {
+  return { kind: "ConstructorDeclaration", classAffil, params, body, type };
+}
+
+export function constructorType(paramTypes) {
+  return { kind: "ConstructorType", paramTypes };
+}
+
+export function functionDeclaration(fun) {
+  return { kind: "FunctionDeclaration", fun };
+}
+
+export function fun(classAffil, name, params, body, type) {
+  return { kind: "Function", classAffil, name, params, body, type };
 }
 
 export function boxFunction(name, type) {
   return { kind: "Function", name, type, box: true };
 }
 
+export function attributeDeclaration(attribute, initializer) {
+  return { kind: "AttributeDeclaration", attribute, initializer };
+}
+
 export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
 }
 
-export function variable(name, readonly, type) {
-  return { kind: "Variable", name, readonly, type };
+export function variable(readonly, classAffil, name, type) {
+  return { kind: "Variable", readonly, classAffil, name, type };
 }
 
 // STATEMENTS
@@ -103,10 +119,6 @@ export function unary(op, operand, type) {
 }
 
 // TYPES
-export function classType(name, fields) {
-  return { kind: "ClassType", name, fields };
-}
-
 export function functionType(paramTypes, returnType) {
   return { kind: "FunctionType", paramTypes, returnType };
 }
