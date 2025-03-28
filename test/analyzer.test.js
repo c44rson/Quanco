@@ -46,14 +46,14 @@ const semanticChecks = [
   [
     "class without constructor",
     `class c {
-        this.x = 1
+        this.x: int = 1
      }`,
   ],
   [
     "class with constructor",
     `class d {
         def __init__(self, x: bool) {
-            this.valid = x
+            this.valid: bool = x
         }
      }`,
   ],
@@ -61,7 +61,7 @@ const semanticChecks = [
     "class with method",
     `class d {
         def __init__(self, x: bool) {
-            this.valid = x
+            this.valid: bool = x
         }
         def flipValid(self) -> void {
             this.valid = not this.valid
@@ -72,7 +72,7 @@ const semanticChecks = [
     "accessing class fields outside class",
     `class d {
         def __init__(self, x: bool) {
-            this.valid = x
+            this.valid: bool = x
         }
         def flipValid(self) -> void {
             this.valid = not this.valid
