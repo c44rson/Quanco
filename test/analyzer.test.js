@@ -210,11 +210,11 @@ describe("The analyzer", () => {
   }
   it("produces the expected representation for a trivial program", () => {
     assert.deepEqual(
-      analyze(parse("let x = π + 2.2;")),
+      analyze(parse("x: float = 1 + 2.2")),
       program([
         variableDeclaration(
           variable("x", true, floatType),
-          binary("+", variable("π", false, floatType), 2.2, floatType)
+          binary("+", 1, 2.2, floatType)
         ),
       ])
     );
