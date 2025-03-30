@@ -162,19 +162,22 @@ export default function analyze(match) {
       return paramList.asIteration().children.map((p) => p.rep());
     },
 
-    Param(id, _colon, type, _eq, exp) {
-      mustNotAlreadyBeDeclared(param.name, { at: id });
+    Param(node) {
+      const [id, _colon, type, _eq, exp] = node.children;
+
+      mustNotAlreadyBeDeclared(id.sourceString, { at: id });
+
       const param = core.variable(
         false,
         context.class,
         id.sourceString,
         type.rep()
       );
-      const initializer = exp.rep();
+      const initializer = exp?.rep();
 
       context.add(param.name, param);
 
-      return core.variableDeclaration(variable, initializer);
+      return core.variableDeclaration(param, initializer);
     },
 
     VarDecl(modifier, id, _colon, type, _eq, exp) {
