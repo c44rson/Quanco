@@ -2,6 +2,7 @@ Quanco {
   Program = (Statement | space)*
 
   Statement = ClassDecl
+            | ConstructorDecl
             | FunctionDecl
             | ForLoop
             | WhileLoop
@@ -16,8 +17,7 @@ Quanco {
   
   ClassDecl = class identifier Block
 
-  FunctionDecl = def ~__init__ identifier "(" Params? ")" ReturnType Block --funcDef
-              | ConstructorDecl
+  FunctionDecl = def ~__init__ identifier "(" Params? ")" ReturnType Block
               
   ConstructorDecl = def __init__ "(" Params? ")" Block
 
@@ -27,7 +27,7 @@ Quanco {
 
   ReturnType = "->" (Type | void)
 
-  LValue = (this ".")? identifier ("." identifier)*
+  LValue = identifier ("." identifier)*
 
   ForLoop = for VarDecl "," ExprStmt "," ExprStmt Block --expressionOrientedLoop
           | for identifier in Expr Block                        --membershipLoop
@@ -42,7 +42,7 @@ Quanco {
 
   ReturnStmt = return Expr?
 
-  VarDecl = readonly? (this ".")? identifier ":" Type ("=" Expr)?
+  VarDecl = readonly? identifier ":" Type ("=" Expr)?
 
   Assignment = LValue "+=" Expr --incReassignment
              | LValue "-=" Expr --decReassignment
@@ -143,9 +143,9 @@ Quanco {
   readonly = "readonly" ~alnum
 
   keyword = class | def | return | for | in | if | elif | else | this | true | false | none | void | break
-          | readonly
+          | readonly | self
   
-  identifier = ~keyword (letter | "_") (alnum | "_")*
+  identifier = (this ".")? ~keyword (letter | "_") (alnum | "_")*
 
   space += comment
   comment = "#" (~"\n" any)* "\n"
