@@ -21,9 +21,9 @@ class Student {
     }
     
     def getOlder(self, years: int) -> void {
-        ++self.age--
+        ++this.age--
         for i: int = 0, i < years, i++ {
-            self.age += 1
+            this.age += 1
         }
         j: int = (0 * 0) / 1
         # does nothing fyi
@@ -33,10 +33,10 @@ class Student {
     }
 
     def isValedictorian(self) -> bool {
-        if self.gpa == 4.0 {
+        if this.gpa == 4.0 {
             return true
         }
-        elif self.gpa == 0.0 { 
+        elif this.gpa == 0.0 { 
             return false
         }
         else {
@@ -45,7 +45,7 @@ class Student {
     }
 
     def describeMyself(self) -> void {
-        print(f"Hi my name is {self.name}! I am {self.age} years old! My gpa is {self.gpa}. It is {self.passing} that I am passing!")
+        print(f"Hi my name is {this.name}! I am {this.age} years old! My gpa is {this.gpa}. It is {this.passing} that I am passing!")
     }
 }
 
