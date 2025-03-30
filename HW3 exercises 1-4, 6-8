@@ -1,0 +1,78 @@
+delete when submitted, 5 not done.
+
+1.
+    a. Syntax Error
+    b. Syntax Error
+    c. Static Semantic Error
+    d. Static Semantic Error
+    e. Static Semantic Error
+    f. Not A Compile Time Error
+    g. Not A Compile Time Error
+    h. Syntax Error
+    i. Syntax Error
+    j. Not A Compile Time Error
+    k. Not A Compile Time Error
+    l. Syntax Error
+    m. Not A Compile Time Error
+
+2.
+	JavaScript throws a syntax error because it does not allow redeclaration of the same let.
+Rust would throw a compile time error because it doesn't allow redeclaration to the same type. 
+In rust let x may be redeclared as a different type than it's prior decleration.
+
+3.
+	In Java, private members may only be accessed in the field that it's defined. In Ruby,
+private members may be called with the self keyword, or at runtime using the send method.
+
+4.
+	Evaluation order does matter and a different order of evaluation may lead to different arguments being passed.
+Example :
+	int i = 0;
+	someFunction(i++, i++);
+
+if this function is evaluated left to right then it would receive (1,2) as a parameter and (2,1) if passed right to left.
+
+5. TODO
+
+6.
+	Max function in python, returns max number in a list.
+
+def max_val(numbers):
+    def max_helper(nums, index, max_num):
+        if len(nums) == 1:
+            return nums[0]
+        elif index >= len(nums):
+            return max_num
+
+        if max_num < nums[index]:
+            max_num = nums[index]
+
+        return max_helper(nums, index + 1, max_num)
+    return max_helper(numbers, 1, numbers[0])
+
+7.
+	The problem with your friends code is the line setTimeout(update(i), 1000) . Because JS evaluated arguments left to right,
+update(i) is being called then update(9) then update (8) ... without any delay. This is because the first argument is evaluated first
+and calls update(i) 10 times immediately before the delay of 1000 that's evaluated after. We can fix this by passing a function into
+setTimeout(). That would look like this, setTimeout(() => update(i), 1000) . This works because the function we are passing into setTimeout(
+is not executed right and instead is evaluated at the same time because we are only passing 1 argument, instead of 2.
+
+8.
+	Empty Constructor:
+		public C() {} is unnecessary because java provides a no arg constructor by default, nothing is added by an empty constructor
+
+	HashMap params:
+		Repeating type parameters is redundant, can use <> instead as java will infer the types. Should look like this:
+			static final HashMap<String, Integer> m = new HashMap<>();
+
+	HashMap accessibility:
+		Making the HashMap final only makes the reference immutable. To make the contents immutable as well it should be defined
+	as private as well. Example :
+			private static final Map<String, Integer> m
+
+	Accessibility of class C and zero():
+		"Class C" has no accessor, this will give the class default accessibility instead of private or public.
+		"static int zero()" should also have an accesor as it's also defualt. Should be explicit in defining accessibility.
+
+	Redundant code:
+		"static int zero() {return 0; }" adds no value, more efficient to just use the int 0 instead of this function.
