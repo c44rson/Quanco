@@ -11,8 +11,12 @@ export function classType(name, constructor, body) {
   return { kind: "ClassType", name, constructor, body };
 }
 
-export function constructorDeclaration(params, body, type) {
-  return { kind: "ConstructorDeclaration", params, body, type };
+export function constructorDeclaration(constructor) {
+  return { kind: "ConstructorDeclaration", constructor };
+}
+
+export function constructor(params, body, type) {
+  return { kind: "Constructor", params, body, type };
 }
 
 export function constructorType(paramTypes) {
@@ -25,6 +29,10 @@ export function functionDeclaration(fun) {
 
 export function fun(classAffil, name, params, body, type) {
   return { kind: "Function", classAffil, name, params, body, type };
+}
+
+export function functionType(paramTypes, returnType) {
+  return { kind: "FunctionType", paramTypes, returnType };
 }
 
 export function variableDeclaration(variable, initializer) {
@@ -105,10 +113,6 @@ export function unary(op, operand, type) {
 }
 
 // TYPES
-export function functionType(paramTypes, returnType) {
-  return { kind: "FunctionType", paramTypes, returnType };
-}
-
 export function listType(baseType) {
   return { kind: "ListType", baseType };
 }

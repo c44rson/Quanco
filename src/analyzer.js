@@ -119,12 +119,11 @@ export default function analyze(match) {
     /* Definitions of the semantic actions */
     ClassDecl(_class, id, block) {
       mustNotAlreadyBeDeclared(id.sourceString, { at: id });
-      const name = id.sourceString;
-      const type = core.classType(name, null, []);
-      context.add(name, type);
+      const type = core.classType(id.sourceString, null, []);
+      context.add(id.sourceString, type);
 
       // Create new child context (recursion)
-      context = context.newChildContext({ inLoop: false, class: name });
+      context = context.newChildContext({ inLoop: false, class: type });
 
       type.body = block.rep();
 
@@ -157,7 +156,24 @@ export default function analyze(match) {
       return core.functionDeclaration(fun);
     },
 
-    ConstructorDecl(_def, __init__, _left, parameters, _right, block) {},
+    ConstructorDecl(_def, __init__, _left, parameters, _right, block) {
+      mustNotAlreadyBeDeclared("init", { at: "init" });
+      const constructor = core.constructor(context.class, "init");
+      context.assignClassNamespace(context.class, "init");
+
+      context = context.newChildContext({ inLoop: false, function: fun });
+      constructor.params = parameters.rep();
+
+      const paramTypes = constructor.params.map((param) => param.type);
+
+      constructor.body = block.rep();
+
+      constructor.type = core.constructorType(paramTypes);
+
+      context = context.parent;
+      context.class.constructor = constructor;
+      return core.constructorDeclaration(constructor);
+    },
 
     ReturnType(_arrow, type) {
       return type.rep();
@@ -232,7 +248,7 @@ export default function analyze(match) {
     },
 
     _terminal() {
-      return this.sourceString; // This prevents the missing semantic action error
+      return this.sourceString;
     },
 
     true(_) {
