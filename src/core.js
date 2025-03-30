@@ -27,10 +27,6 @@ export function fun(classAffil, name, params, body, type) {
   return { kind: "Function", classAffil, name, params, body, type };
 }
 
-export function boxFunction(name, type) {
-  return { kind: "Function", name, type, box: true };
-}
-
 export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
 }
@@ -39,21 +35,13 @@ export function variable(readonly, classAffil, name, type) {
   return { kind: "Variable", readonly, classAffil, name, type };
 }
 
+export function assignment(target, source) {
+  return { kind: "Assignment", target, source };
+}
+
 // STATEMENTS
 export function functionCall(callee, args) {
-  if (callee.box) {
-    if (callee.type.returnType === voidType) {
-      return {
-        kind: callee.name.replace(/^\p{L}/u, (c) => c.toUpperCase()),
-        args,
-      };
-    } else if (callee.type.paramTypes.length === 1) {
-      return unary(callee.name, args[0], callee.type.returnType);
-    } else {
-      return binary(callee.name, args[0], args[1], callee.type.returnType);
-    }
-  }
-  return { kind: "FunctionCall", callee, args, type: callee.type.returnType };
+  return { kind: "FunctionCall", callee, args };
 }
 
 export function constructorCall(callee, args) {
@@ -75,6 +63,8 @@ export function ifStatement(test, consequent, alternates, final) {
 export function returnStatement(expression) {
   return { kind: "ReturnStatement", expression };
 }
+
+export const shortReturnStatement = { kind: "ShortReturnStatement" };
 
 export const breakStatement = { kind: "BreakStatement" };
 
@@ -102,8 +92,8 @@ export function subscript(list, start, stop) {
   };
 }
 
-export function member(object, op, field) {
-  return { kind: "MemberExpression", object, op, field, type: field.type };
+export function propertyExpression(base, prop) {
+  return { kind: "PropertyExpression", base, prop };
 }
 
 export function binary(op, left, right, type) {
@@ -149,10 +139,6 @@ export const floatType = "float";
 export const stringType = "str";
 export const voidType = "void";
 export const noneType = "none";
-export const anyType = "any";
-
-const anyToVoidType = functionType([anyType], voidType);
-const anyToIntType = functionType([anyType], intType);
 
 // STD LIBRARY
 export const standardLibrary = Object.freeze({
@@ -162,9 +148,6 @@ export const standardLibrary = Object.freeze({
   string: stringType,
   void: voidType,
   none: noneType,
-  any: anyType,
-  print: boxFunction("print", anyToVoidType),
-  len: boxFunction("print", anyToIntType),
 });
 
 String.prototype.type = stringType;

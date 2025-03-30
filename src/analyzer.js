@@ -157,6 +157,43 @@ export default function analyze(match) {
       return core.functionDeclaration(fun);
     },
 
+    ConstructorDecl(_def, __init__, _left, parameters, _right, block) {},
+
+    ReturnType(_arrow, type) {
+      return type.rep();
+    },
+
+    ReturnStmt(_return, expr) {
+      if (expr.numChildren === 0) {
+        return core.shortReturnStatement;
+      } else {
+        return core.returnStatement(expr.rep());
+      }
+    },
+
+    VarDecl(modifier, id, _colon, type, _eq, exp) {
+      mustNotAlreadyBeDeclared(id.sourceString, { at: id });
+
+      const readonly = modifier.sourceString === "readonly";
+      const classAffil = context.class;
+      const name = id.sourceString;
+      const initializer = exp.rep();
+      const variable = core.variable(readonly, classAffil, name, type);
+
+      context.add(id.sourceString, variable);
+
+      if (classAffil) {
+        context.assignClassNamespace(classAffil, name);
+      }
+
+      return core.variableDeclaration(variable, initializer);
+    },
+
+    Assignment(lval, _eq, expr) {
+      return core.assignment(lval.rep(), expr.rep());
+    },
+
+    // STATEMENTS
     Params(_self, _comma, paramList) {
       // Returns a list of variable nodes
       return paramList.asIteration().children.map((p) => p.rep());
@@ -180,25 +217,20 @@ export default function analyze(match) {
       return core.variableDeclaration(param, initializer);
     },
 
-    VarDecl(modifier, id, _colon, type, _eq, exp) {
-      mustNotAlreadyBeDeclared(id.sourceString, { at: id });
+    // OPERATORS
 
-      const readonly = modifier.sourceString === "readonly";
-      const classAffil = context.class;
-      const name = id.sourceString;
-      const initializer = exp.rep();
-      const variable = core.variable(readonly, classAffil, name, type);
+    // VARIABLES AND TYPES
+    LValue(firstId, _dot, rest) {
+      let base = firstId.sourceString;
 
-      context.add(id.sourceString, variable);
-
-      if (classAffil) {
-        context.assignClassNamespace(classAffil, name);
+      for (let dotAndId of rest.children) {
+        const prop = dotAndId.children[1].sourceString;
+        base = core.propertyExpression(base, prop);
       }
 
-      return core.variableDeclaration(variable, initializer);
+      return base;
     },
 
-    // VARIABLE STUFF
     _terminal() {
       return this.sourceString; // This prevents the missing semantic action error
     },

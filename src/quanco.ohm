@@ -44,9 +44,7 @@ Quanco {
 
   VarDecl = readonly? identifier ":" Type ("=" Expr)?
 
-  Assignment = LValue "+=" Expr --incReassignment
-             | LValue "-=" Expr --decReassignment
-             | LValue "=" Expr  --tradAssignment
+  Assignment = LValue ("+=" | "-=" | "=") Expr
 
   ExprStmt = Expr
 
