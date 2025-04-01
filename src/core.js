@@ -108,8 +108,17 @@ export function binary(op, left, right, type) {
   return { kind: "BinaryExpression", op, left, right, type };
 }
 
-export function unary(op, operand, type) {
-  return { kind: "UnaryExpression", op, operand, type };
+export function unary(ops, operand, type) {
+  return { kind: "UnaryExpression", ops, operand, type };
+}
+
+export function postfixExpression(ops, base, type) {
+  return {
+    kind: "PostfixExpression",
+    ops,
+    base,
+    type,
+  };
 }
 
 // TYPES
@@ -138,7 +147,7 @@ export function unionType(firstType, secondType) {
 }
 
 export const booleanType = "bool";
-export const intType = "int";
+export const numType = "num";
 export const floatType = "float";
 export const stringType = "str";
 export const voidType = "void";
@@ -146,7 +155,7 @@ export const noneType = "none";
 
 // STD LIBRARY
 export const standardLibrary = Object.freeze({
-  int: intType,
+  num: numType,
   float: floatType,
   boolean: booleanType,
   string: stringType,
@@ -156,5 +165,4 @@ export const standardLibrary = Object.freeze({
 
 String.prototype.type = stringType;
 Number.prototype.type = floatType;
-BigInt.prototype.type = intType;
 Boolean.prototype.type = booleanType;

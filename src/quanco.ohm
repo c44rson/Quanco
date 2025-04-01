@@ -17,7 +17,7 @@ Quanco {
   
   ClassDecl = class identifier Block
 
-  FunctionDecl = def ~__init__ identifier "(" Params? ")" ReturnType Block
+  FunctionDecl = def ~__init__ identifier "(" Params? ")" "->" ReturnType Block
               
   ConstructorDecl = def __init__ "(" Params? ")" Block
 
@@ -25,7 +25,7 @@ Quanco {
   Param = ~self identifier ":" Type ("=" Expr)? -- regParam
         | self
 
-  ReturnType = "->" (Type | void)
+  ReturnType = (Type | void)
 
   LValue = identifier ("." identifier)*
 
@@ -62,11 +62,11 @@ Quanco {
 
   UnaryExpr = PrefixOp* PostfixExpr PostfixOp*
 
-  PostfixExpr = PrimaryExpr (DotOp | CallOp | AccessOp)*
+  PostfixExpr = PrimaryExpr (PropertyOp | CallOp | SubscriptOp)*
 
-  DotOp = "." identifier
+  PropertyOp = "." identifier
   CallOp = "(" ArgList? ")"
-  AccessOp = "[" number (":" number)? "]"
+  SubscriptOp = "[" number (":" number)? "]"
 
   PrimaryExpr = ParenExpr
               | ListLit
@@ -98,7 +98,7 @@ Quanco {
        | BasicType
        | identifier
 
-  BasicType = str | int | float | bool | none
+  BasicType = str | num | bool | none
   ListType = "list" "[" Type "]"
   DictType = "dict" "[" Type "," Type "]"
   UnionType = Type "|" Type
@@ -125,8 +125,7 @@ Quanco {
   true = "true" ~alnum
   false = "false" ~alnum
   str = "str" ~alnum
-  int = "int" ~alnum
-  float = "float" ~alnum
+  num = "num" ~alnum
   bool = "bool" ~alnum
   none = "none" ~alnum
   return = "return" ~alnum
