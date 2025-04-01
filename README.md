@@ -1,4 +1,4 @@
-![Image](https://github.com/user-attachments/assets/024bb50e-9adc-45e7-890d-9c0d54101585)
+<img src="https://github.com/c44rson/Quanco/blob/main/docs/QuancoLogo.png" alt="Quanco Logo" width="400" height="400">
 
 # Quanco
 A language for the intersection of Rugby fans, and those who love general-purpose scripting languages, like Python and TypeScript.
