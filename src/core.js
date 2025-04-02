@@ -56,8 +56,8 @@ export function constructorCall(callee, args) {
   return { kind: "ConstructorCall", callee, args, type: callee };
 }
 
-export function forStatement(iterator, collection, body) {
-  return { kind: "ForStatement", iterator, collection, body };
+export function forStatement(iterator, condition, step, body) {
+  return { kind: "ForStatement", iterator, condition, step, body };
 }
 
 export function whileStatement(test, body) {
@@ -77,27 +77,8 @@ export const shortReturnStatement = { kind: "ShortReturnStatement" };
 export const breakStatement = { kind: "BreakStatement" };
 
 // EXPRESSIONS
-export function listExpression(elements) {
-  return { kind: "ListExpression", elements, type: listType(elements[0].type) };
-}
-
-export function dictExpression(pairs) {
-  return {
-    kind: "DictExpression",
-    pairs,
-    key_type: dictKeyType(pairs[0].type),
-    value_type: dictValueType(pairs[1].type),
-  };
-}
-
-export function subscript(list, start, stop) {
-  return {
-    kind: "SubscriptExpression",
-    list,
-    start,
-    stop,
-    type: list.type.baseType,
-  };
+export function parenExpr(exp) {
+  return { kind: "ParenthesizedExpression", exp };
 }
 
 export function propertyExpression(base, prop) {
@@ -122,33 +103,12 @@ export function postfixExpression(ops, base, type) {
 }
 
 // TYPES
-export function listType(baseType) {
-  return { kind: "ListType", baseType };
-}
-
-export function emptyList(type) {
-  return { kind: "EmptyList", type };
-}
-
-export function dictKeyType(baseType) {
-  return { kind: "DictKeyType", baseType };
-}
-
-export function dictValueType(baseType) {
-  return { kind: "DictValueType", baseType };
-}
-
-export function emptyDict(type) {
-  return { kind: "EmptyDict", type };
-}
-
 export function unionType(firstType, secondType) {
   return { kind: "UnionType", firstType, secondType };
 }
 
 export const booleanType = "bool";
 export const numType = "num";
-export const floatType = "float";
 export const stringType = "str";
 export const voidType = "void";
 export const noneType = "none";
@@ -156,7 +116,6 @@ export const noneType = "none";
 // STD LIBRARY
 export const standardLibrary = Object.freeze({
   num: numType,
-  float: floatType,
   boolean: booleanType,
   string: stringType,
   void: voidType,
@@ -164,5 +123,5 @@ export const standardLibrary = Object.freeze({
 });
 
 String.prototype.type = stringType;
-Number.prototype.type = floatType;
 Boolean.prototype.type = booleanType;
+Number.prototype.type = numType;

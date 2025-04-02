@@ -68,10 +68,6 @@ export default function analyze(match) {
   // HELPER FUNCTIONS
 
   // MUST RULES
-  function mustBeInClass(at) {
-    must(context.class, `self argument must be used in class`, at);
-  }
-
   function mustBeInLoop(at) {
     must(context.inLoop, "Break can only appear in a loop", at);
   }
@@ -80,17 +76,13 @@ export default function analyze(match) {
     must(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
-  function mustHaveBeenFound(entity, name, at) {
-    must(entity, `Identifier ${name} not declared`, at);
-  }
-
   function mustHaveNumericType(e, at) {
-    const expectedTypes = [core.intType, core.floatType];
+    const expectedTypes = [core.numType, core.floatType];
     must(expectedTypes.includes(e.type), "Expected a number", at);
   }
 
   function mustHaveNumericOrStringType(e, at) {
-    const expectedTypes = [core.intType, core.floatType, core.stringType];
+    const expectedTypes = [core.numType, core.floatType, core.stringType];
     must(expectedTypes.includes(e.type), "Expected a number or string", at);
   }
 
@@ -99,15 +91,7 @@ export default function analyze(match) {
   }
 
   function mustHaveIntegerType(e, at) {
-    must(e.type === core.intType, "Expected an integer", at);
-  }
-
-  function mustHaveListType(e, at) {
-    must(e.type?.kind === "ListType", "Expected a list", at);
-  }
-
-  function mustHaveClassType(e, at) {
-    must(e.type?.kind === "ClassType", "Expected a class", at);
+    must(e.type === core.numType, "Expected an integer", at);
   }
 
   function mustBothHaveTheSameType(e1, e2, at) {
@@ -209,11 +193,15 @@ export default function analyze(match) {
     },
 
     ReturnType(type) {
-      return type.rep();
+      if (type.sourceString === "void") {
+        return core.voidType;
+      } else {
+        return type.rep();
+      }
     },
 
     ReturnStmt(_return, expr) {
-      if (!expr || expr.children.length === 0) {
+      if (!expr || !expr.children || expr.children?.length === 0) {
         return core.shortReturnStatement;
       }
 
@@ -245,8 +233,52 @@ export default function analyze(match) {
     },
 
     // STATEMENTS
+    ForLoop(_for, varDecl, _comma1, condition, _comma2, unaryExpr, body) {
+      const iterator = varDecl.rep();
+      const conditionExpr = condition.rep();
+      const step = unaryExpr.rep();
+      context = context.newChildContext({ inLoop: true });
+      const bodyBlock = body.rep();
+      context = context.parent;
+
+      return core.forStatement(iterator, conditionExpr, step, bodyBlock);
+    },
+
+    WhileLoop(_while, exp, block) {
+      const test = exp.rep();
+      mustHaveBooleanType(test, { at: exp });
+      context = context.newChildContext({ inLoop: true });
+      const body = block.rep();
+      context = context.parent;
+      return core.whileStatement(test, body);
+    },
+
+    IfStmt(
+      _if,
+      condition,
+      consequent,
+      _elif,
+      elif_conditions,
+      elif_blocks,
+      _else,
+      final
+    ) {
+      const test = condition.rep();
+      const consequentBlock = consequent.rep();
+
+      const alternates = elif_conditions.children.map((e, idx) => {
+        const elifCondition = e.rep();
+        const elifBlock = elif_blocks.children[idx].rep();
+        return { condition: elifCondition, block: elifBlock };
+      });
+
+      const finalBlock = final ? final.rep() : null;
+
+      return core.ifStatement(test, consequentBlock, alternates, finalBlock);
+    },
+
     Params(_self, _comma, paramList) {
-      return paramList.asIteration().children.map((p) => p.rep());
+      return paramList.children.map((p) => p.rep());
     },
 
     Param(node) {
@@ -273,11 +305,7 @@ export default function analyze(match) {
     },
 
     // EXPR
-    Expr(expr) {
-      return expr.rep();
-    },
-
-    OrExpr(exp, _ops, exps) {
+    Exp_OrExpr(exp, _ops, exps) {
       let left = exp.rep();
       mustHaveBooleanType(left, { at: exp });
       for (let e of exps.children) {
@@ -288,7 +316,7 @@ export default function analyze(match) {
       return left;
     },
 
-    AndExpr(exp, _ops, exps) {
+    Exp1_AndExpr(exp, _ops, exps) {
       let left = exp.rep();
       mustHaveBooleanType(left, { at: exp });
       for (let e of exps.children) {
@@ -299,7 +327,7 @@ export default function analyze(match) {
       return left;
     },
 
-    CompareExpr(exp1, relop, exp2) {
+    Exp2_CompareExpr(exp1, relop, exp2) {
       const [left, op, right] = [exp1.rep(), relop.sourceString, exp2.rep()];
       if (["<", "<=", ">", ">="].includes(op)) {
         mustHaveNumericOrStringType(left, { at: exp1 });
@@ -308,7 +336,7 @@ export default function analyze(match) {
       return core.binary(op, left, right, core.booleanType);
     },
 
-    AddExpr(exp1, addOp, exp2) {
+    Exp3_AddExpr(exp1, addOp, exp2) {
       const [left, op, right] = [exp1.rep(), addOp.sourceString, exp2.rep()];
       if (op === "+") {
         mustHaveNumericOrStringType(left, { at: exp1 });
@@ -319,27 +347,19 @@ export default function analyze(match) {
       return core.binary(op, left, right, left.type);
     },
 
-    MulExpr(exp1, mulOp, exp2) {
+    Exp4_MulExpr(exp1, mulOp, exp2) {
       const [left, op, right] = [exp1.rep(), mulOp.sourceString, exp2.rep()];
       mustHaveNumericType(left, { at: exp1 });
       mustBothHaveTheSameType(left, right, { at: mulOp });
       return core.binary(op, left, right, left.type);
     },
 
-    UnaryExpr(prefixOps, postfixExpr, postfixOps) {
+    Exp5_PrefixExpr(prefixOps, postfixExpr) {
       let ops = [];
 
       const prefixArray = Array.isArray(prefixOps) ? prefixOps : [prefixOps];
 
       prefixArray.forEach((opNode) => {
-        ops.push(opNode.sourceString);
-      });
-
-      const postfixArray = Array.isArray(postfixOps)
-        ? postfixOps
-        : [postfixOps];
-
-      postfixArray.forEach((opNode) => {
         ops.push(opNode.sourceString);
       });
 
@@ -364,7 +384,7 @@ export default function analyze(match) {
       return core.unary(ops, operand, type);
     },
 
-    PostfixExpr(baseExpr, ops) {
+    Exp6_PostfixExpr(baseExpr, ops) {
       const base = baseExpr.rep();
       let result = base;
 
@@ -381,11 +401,6 @@ export default function analyze(match) {
           const args = op.ArgList ? op.ArgList.rep() : [];
           operationList.push(op.sourceString);
           result = core.functionCall(result, args);
-        } else if (op.kind === "SubscriptExpression") {
-          const start = op.start.rep();
-          const stop = op.stop ? op.stop.rep() : null;
-          operationList.push(op.sourceString);
-          result = core.subscript(result, start, stop);
         }
       });
 
@@ -416,15 +431,47 @@ export default function analyze(match) {
       return args;
     },
 
-    SubscriptOp(_open, start, _colon, stop, _close) {
-      const listExpr = this.children[0].rep();
-      const startExpr = start.rep();
-      const stopExpr = stop ? stop.rep() : null;
-      mustHaveListType(listExpr, listExpr);
-      return core.subscript(listExpr, startExpr, stopExpr);
+    ParenExpr(_open, exp, _close) {
+      return core.parenExpr(exp.rep());
+    },
+
+    BooleanLit(bool) {
+      return Boolean(bool);
+    },
+
+    identifier(_this, _dot, firstChar, rest) {
+      const name = firstChar.sourceString + rest.sourceString;
+      return name;
+    },
+
+    none(_) {
+      return core.noneType;
     },
 
     // VARIABLES AND TYPES
+    Type(type) {
+      return type.rep();
+    },
+
+    BasicType(basic) {
+      switch (basic.sourceString) {
+        case "str":
+          return core.stringType;
+        case "num":
+          return core.numType;
+        case "bool":
+          return core.booleanType;
+        case "float":
+          return core.floatType;
+        case "none":
+          return core.noneType;
+      }
+    },
+
+    UnionType(left, _bar, right) {
+      return core.unionType(left.rep(), right.rep());
+    },
+
     LValue(firstId, _dot, rest) {
       let base = firstId.sourceString;
 
@@ -440,16 +487,9 @@ export default function analyze(match) {
       return children.map((child) => child.rep());
     },
 
-    true(_) {
-      return true;
-    },
-
-    false(_) {
-      return false;
-    },
-
-    _terminal(...terminal) {
-      return this.sourceString;
+    _terminal() {
+      const value = this.sourceString;
+      return value;
     },
 
     number(_whole, _point, _fraction, _e, _digits) {
@@ -460,7 +500,7 @@ export default function analyze(match) {
     string(_openQuote, _chars, _closeQuote) {
       // Carlos strings will be represented as plain JS strings, including
       // the quotation marks
-      return this.sourceString;
+      return String(this.sourceString);
     },
   });
   /* One line to run it */

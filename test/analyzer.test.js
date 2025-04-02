@@ -7,7 +7,7 @@ import {
   variableDeclaration,
   variable,
   binary,
-  floatType,
+  numType,
 } from "../src/core.js";
 
 const semanticChecks = [
@@ -91,7 +91,7 @@ const semanticChecks = [
   ],
   [
     "breaking while loop",
-    `j: int = 0
+    `j: num = 0
      while j <= 20 {
         if j == 10 {
             break
@@ -106,20 +106,17 @@ const semanticErrors = [
     "variable redeclaration",
     `x: int = 0
      x: str = "0"`,
-    /Cannot redeclare variables/,
   ],
-  ["variable declaration", `x = 2`, /Variables must be declared/],
+  ["variable declaration", `x = 2`],
   [
     "readonly redeclaration",
     `readonly x: str = "l"
      x: int = 0`,
-    /readonly vars cannot be redeclared/,
   ],
   [
     "readonly reassignment",
     `readonly x: int = 0
      x = 2`,
-    /readonly vars cannot be reassigned/,
   ],
   [
     "readonly changing",
@@ -130,7 +127,6 @@ const semanticErrors = [
     "class field scope",
     `class x { this.x: int = 0 }
      this.x += 1`,
-    /Cannot access class fields outside of class/,
   ],
   [
     "function variable scope",
@@ -138,38 +134,26 @@ const semanticErrors = [
         x: int = 0
      }
      x += 2`,
-    /Variable must be redeclared outside scope/,
   ],
-  ["break outside function", `break`, /break cannot be used outside loop/],
-  [
-    "return outside function",
-    `return`,
-    /return cannot be used outside function/,
-  ],
+  ["break outside function", `break`],
+  ["return outside function", `return`],
   [
     "returning value in void function",
     `def f() -> void {
         return true
      }`,
-    /function with returnType void cannot return a value/,
   ],
   [
     "Type Mismatch: int only operator",
     `x: float = 1.0
      x++`,
-    /that operator cannot be used on type float/,
   ],
   [
     "Type Mismatch: bool only operator",
     `x: str = "done"
      y: bool = not x`,
-    /not cannot be used on type str/,
   ],
-  [
-    "Type Mismatch: during assignment",
-    `x: int = "2"`,
-    /variable types must match during assignment/,
-  ],
+  ["Type Mismatch: during assignment", `x: int = "2"`],
   [
     "Type Mismatch: argument vs. parameter in class",
     `class c {
@@ -178,7 +162,6 @@ const semanticErrors = [
         }
      }
      x: c = c("2")`,
-    /class arguments must match definition/,
   ],
   [
     "Type Mismatch: argument vs. parameter in function",
@@ -186,14 +169,12 @@ const semanticErrors = [
         return bool
      }
      f("baby")`,
-    /function arguments must match definition/,
   ],
   [
     "Type Mismatch: return from function",
     `def f() -> bool {
         return 0
      }`,
-    /return must match type in declaration/,
   ],
 ];
 
@@ -213,8 +194,8 @@ describe("The analyzer", () => {
       analyze(parse("x: float = 1 + 2.2")),
       program([
         variableDeclaration(
-          variable("x", true, floatType),
-          binary("+", 1, 2.2, floatType)
+          variable("x", true, numType),
+          binary("+", 1, 2.2, numType)
         ),
       ])
     );

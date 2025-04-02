@@ -11,7 +11,7 @@ Quanco {
             | ReturnStmt
             | VarDecl
             | Assignment
-            | ExprStmt
+            | Exp
             
   Block = "{" Statement+ "}"
   
@@ -22,100 +22,82 @@ Quanco {
   ConstructorDecl = def __init__ "(" Params? ")" Block
 
   Params = Param ("," Param)*
-  Param = ~self identifier ":" Type ("=" Expr)? -- regParam
+  Param = ~self identifier ":" Type ("=" Exp)? -- regParam
         | self
 
   ReturnType = (Type | void)
 
   LValue = identifier ("." identifier)*
 
-  ForLoop = for VarDecl "," ExprStmt "," ExprStmt Block --expressionOrientedLoop
-          | for identifier in Expr Block                        --membershipLoop
+  ForLoop = for VarDecl "," Exp "," Exp Block
 
-  WhileLoop = while Expr Block
+  WhileLoop = while Exp2 Block
 
-  IfStmt = if Expr Block
-           (elif Expr Block)*
+  IfStmt = if Exp Block
+           (elif Exp Block)*
            (else Block)?
 
   BreakStmt = break
 
-  ReturnStmt = return Expr?
+  ReturnStmt = return Exp?
 
-  VarDecl = readonly? identifier ":" Type ("=" Expr)?
+  VarDecl = readonly? identifier ":" Type ("=" Exp)?
 
-  Assignment = LValue ("+=" | "-=" | "=") Expr
+  Assignment = LValue ("+=" | "-=" | "=") Exp
 
-  ExprStmt = Expr
+  Exp  	= Exp "or" Exp1					        --OrExpr
+        | Exp1
+  
+  Exp1  = Exp1 "and" Exp2				        --AndExpr
+  	| Exp2
+  
+  Exp2  = Exp2 ("==" | "!=" | "<=" | "<" | ">=" | ">") Exp3     --CompareExpr
+  	| Exp3
+  
+  Exp3  = Exp3 ("+" | "-") Exp4				        --AddExpr
+        | Exp4
 
-  Expr = OrExpr
-
-  OrExpr = AndExpr ("or" AndExpr)*
-
-  AndExpr = CompareExpr ("and" CompareExpr)*
-
-  CompareExpr = AddExpr (CompareOp AddExpr)*
-
-  AddExpr = MulExpr (AddOp MulExpr)*
-
-  MulExpr = UnaryExpr (MulOp UnaryExpr)*
-
-  UnaryExpr = PrefixOp* PostfixExpr PostfixOp*
-
-  PostfixExpr = PrimaryExpr (PropertyOp | CallOp | SubscriptOp)*
+  Exp4  = Exp4 ("*" | "/") Exp5				        --MulExpr
+	| Exp5
+  
+  Exp5  = (unaryInc | unaryDec | "-" | "not") Exp6  		--PrefixExpr
+  	| Exp6
+  
+  Exp6  = Exp6 (PropertyOp | CallOp)*				--PostfixExpr
+  	| ParenExpr					       
+        | string
+        | identifier
+        | number
+        | BooleanLit
+        | none
 
   PropertyOp = "." identifier
   CallOp = "(" ArgList? ")"
-  SubscriptOp = "[" number (":" number)? "]"
 
-  PrimaryExpr = ParenExpr
-              | ListLit
-              | DictLit
-              | string
-              | identifier
-              | number
-              | BooleanLit
-              | none
+  ParenExpr = "(" Exp ")"
 
-  ParenExpr = "(" Expr ")"
-
-  BooleanLit = true | false
-
-  ArgList = (NamedArg | Expr) ("," (NamedArg | Expr))*
-
-  NamedArg = identifier "=" Expr
-
-  ListLit = "[" ListItems? "]"
-  ListItems = Expr ("," Expr)*
-
-  DictLit = "{" DictItems? "}"
-  DictItems = DictItem ("," DictItem)*
-  DictItem = Expr ":" Expr
-
-  Type = UnionType
-       | ListType
-       | DictType
-       | BasicType
-       | identifier
-
-  BasicType = str | num | bool | none
-  ListType = "list" "[" Type "]"
-  DictType = "dict" "[" Type "," Type "]"
-  UnionType = Type "|" Type
-
-  CompareOp = "==" | "!=" | "<=" | "<" | ">=" | ">"
-  AddOp = "+" | "-"
-  MulOp = "*" | "/"
-  PrefixOp = unaryInc | unaryDec | "-" | "not"
-  PostfixOp = unaryInc | unaryDec
-
-  unaryInc = "++"
-  unaryDec = "--"
-  number = digit+ ("." digit+)? (("e" | "E") digit+)?
   string = "\"" (~"\"" any)* "\""
          | "'" (~"'" any)* "'"
          | "f\"" (~"\"" any)* "\""
          | "f'" (~"'" any)* "'"
+
+  number = digit+ ("." digit+)? (("e" | "E") digit+)?
+
+  BooleanLit = true | false
+
+  ArgList = (NamedArg | Exp) ("," (NamedArg | Exp))*
+
+  NamedArg = identifier "=" Exp
+
+  Type = UnionType
+       | BasicType
+       | identifier
+
+  BasicType = str | num | bool | none
+  UnionType = Type "|" Type
+
+  unaryInc = "++"
+  unaryDec = "--"
 
   class = "class" ~alnum
   def = "def" ~alnum

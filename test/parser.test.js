@@ -40,7 +40,7 @@ const syntaxChecks = [
     "for loops",
     `
         def example() -> void {
-            for i in range(10) {
+            for i: int = 0, i < 5, ++i {
                 print(i)
             }
         }
@@ -69,28 +69,6 @@ const syntaxChecks = [
             else {
                 return "zero"
             }
-        }
-    `,
-  ],
-
-  [
-    "list operations",
-    `
-        def example() -> void {
-            numbers: list[int] = [1, 2, 3]
-            for n in numbers {
-                print(n)
-            }
-        }
-    `,
-  ],
-
-  [
-    "dictionary operations",
-    `
-        def example() -> void {
-            scores: dict[str, int] = {"Julian": 10}
-            print(scores)
         }
     `,
   ],
