@@ -13,12 +13,12 @@ import {
 const semanticChecks = [
   [
     "variable declarations",
-    `readonly x: int
+    `readonly x: num
      y: str`,
   ],
   [
     "variable assignments",
-    `readonly y: int = 0
+    `readonly y: num = 0
      z: str = "0"
      a: bool = true
      b: float = 0.0
@@ -30,7 +30,12 @@ const semanticChecks = [
         return
      }`,
   ],
-  ["function with parameters"],
+  [
+    "function with parameters",
+    `def f(x: num, y: bool) -> bool {
+        return true
+    }`,
+  ],
   [
     "void function",
     `def f(x: bool) -> void {
@@ -39,14 +44,14 @@ const semanticChecks = [
   ],
   [
     "non-void function",
-    `def f(x: int) -> int {
+    `def f(x: num) -> num {
         return x
      }`,
   ],
   [
     "class without constructor",
     `class c {
-        this.x: int = 1
+        this.x: num = 1
      }`,
   ],
   [
@@ -83,7 +88,7 @@ const semanticChecks = [
   ],
   [
     "breaking for loop",
-    `for i: int = 0, i < 5, i++ {
+    `for i: num = 0, i < 5, ++i {
         if i == 2 {
             break
         }
@@ -99,7 +104,6 @@ const semanticChecks = [
         j += 2
      }`,
   ],
-  ["union type", ``],
 ];
 const semanticErrors = [
   [
@@ -191,12 +195,11 @@ describe("The analyzer", () => {
   }
   it("produces the expected representation for a trivial program", () => {
     assert.deepEqual(
-      analyze(parse("x: float = 1 + 2.2")),
+      analyze(parse("x: num = 1 + 2.2")),
       program([
-        variableDeclaration(
-          variable("x", true, numType),
-          binary("+", 1, 2.2, numType)
-        ),
+        variableDeclaration(variable(false, null, "x", numType), [
+          binary("+", 1, 2.2, numType),
+        ]),
       ])
     );
   });
