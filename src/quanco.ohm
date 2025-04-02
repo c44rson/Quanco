@@ -39,7 +39,8 @@ Quanco {
 
   BreakStmt = break
 
-  ReturnStmt = return Exp?
+  ReturnStmt = return ~alnum                                    --shortReturn
+             | return Exp                                       --longReturn
 
   VarDecl = readonly? identifier ":" Type ("=" Exp)?
 
