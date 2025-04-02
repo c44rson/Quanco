@@ -3,7 +3,7 @@ import * as core from "./core.js";
 class Context {
   constructor({
     parent = null,
-    globalClassNamespace = {},
+    globalClassNamespace = new Map(),
     locals = new Map(),
     inLoop = false,
     class: c = null,
@@ -21,26 +21,14 @@ class Context {
   add(name, entity) {
     this.locals.set(name, entity);
   }
-  assignClassNamespace(className, id) {
-    this.globalClassNamespace[className] = [
-      ...(this.globalClassNamespace[className] ?? []),
-      id,
-    ];
+  assignClassNamespace(id, entity) {
+    this.globalClassNamespace.set(id, entity);
   }
   lookup(name) {
     return (
       this.locals.get(name) ||
-      this.globalClassNameSpace?.hasOwnProperty(name) ||
+      this.globalClassNamespace.get(name) ||
       this.parent?.lookup(name)
-    );
-  }
-  lookupClassName(className) {
-    return this.globalClassNameSpace?.hasOwnProperty(className);
-  }
-  lookupClassItem(className, id) {
-    return (
-      !!this.globalClassNamespace?.[className] &&
-      id in this.globalClassNamespace[className]
     );
   }
   static root() {
@@ -77,12 +65,12 @@ export default function analyze(match) {
   }
 
   function mustHaveNumericType(e, at) {
-    const expectedTypes = [core.numType, core.floatType];
+    const expectedTypes = [core.numType];
     must(expectedTypes.includes(e.type), "Expected a number", at);
   }
 
   function mustHaveNumericOrStringType(e, at) {
-    const expectedTypes = [core.numType, core.floatType, core.stringType];
+    const expectedTypes = [core.numType, core.stringType];
     must(expectedTypes.includes(e.type), "Expected a number or string", at);
   }
 
@@ -105,11 +93,10 @@ export default function analyze(match) {
   function equivalent(t1, t2) {
     return (
       t1 === t2 ||
+      (t1 === "str" && t2 === "num") ||
+      (t1 === "num" && t2 === "str") ||
       (t1?.kind === "UnionType" &&
         t2?.kind === "UnionType" &&
-        equivalent(t1.baseType, t2.baseType)) ||
-      (t1?.kind === "ListType" &&
-        t2?.kind === "ListType" &&
         equivalent(t1.baseType, t2.baseType)) ||
       (t1?.kind === "FunctionType" &&
         t2?.kind === "FunctionType" &&
@@ -151,7 +138,7 @@ export default function analyze(match) {
       const fun = core.fun(context.class, id.sourceString);
 
       if (context.class) {
-        context.assignClassNamespace(context.class, id);
+        context.assignClassNamespace(id, fun);
       }
       context.add(id.sourceString, fun);
 
@@ -171,9 +158,8 @@ export default function analyze(match) {
     },
 
     ConstructorDecl(_def, __init__, _left, parameters, _right, block) {
-      mustNotAlreadyBeDeclared("init", { at: "init" });
       const constructor = core.constructor(context.class, "init");
-      context.assignClassNamespace(context.class, "init");
+      context.assignClassNamespace("init", constructor);
 
       context = context.newChildContext({
         inLoop: false,
@@ -200,14 +186,12 @@ export default function analyze(match) {
       }
     },
 
-    ReturnStmt(_return, expr) {
-      if (!expr || !expr.children || expr.children?.length === 0) {
-        return core.shortReturnStatement;
-      }
+    ReturnStmt_longReturn(_return, exp) {
+      return core.returnStatement(exp.rep());
+    },
 
-      let exprNode = expr.children[0];
-
-      return core.returnStatement(exprNode.rep());
+    ReturnStmt_shortReturn(_return) {
+      return core.shortReturnStatement;
     },
 
     VarDecl(modifier, id, _colon, type, _eq, exp) {
@@ -217,12 +201,17 @@ export default function analyze(match) {
       const classAffil = context.class;
       const name = id.sourceString;
       const initializer = exp.rep();
-      const variable = core.variable(readonly, classAffil, name, type);
+      const variable = core.variable(
+        readonly,
+        classAffil,
+        name,
+        type.sourceString
+      );
 
       context.add(id.sourceString, variable);
 
       if (classAffil) {
-        context.assignClassNamespace(classAffil, name);
+        context.assignClassNamespace(name, variable);
       }
 
       return core.variableDeclaration(variable, initializer);
@@ -246,6 +235,7 @@ export default function analyze(match) {
 
     WhileLoop(_while, exp, block) {
       const test = exp.rep();
+
       mustHaveBooleanType(test, { at: exp });
       context = context.newChildContext({ inLoop: true });
       const body = block.rep();
@@ -284,7 +274,7 @@ export default function analyze(match) {
     Param(node) {
       const [id, _colon, type, _eq, exp] = node.children;
 
-      mustNotAlreadyBeDeclared(id.sourceString, { at: id });
+      mustNotAlreadyBeDeclared(id.sourceString, { at: node });
 
       const param = core.variable(
         false,
@@ -292,7 +282,7 @@ export default function analyze(match) {
         id.sourceString,
         type.rep()
       );
-      const initializer = exp?.rep();
+      const initializer = exp.rep();
 
       context.add(param.name, param);
 
@@ -310,7 +300,7 @@ export default function analyze(match) {
       mustHaveBooleanType(left, { at: exp });
       for (let e of exps.children) {
         let right = e.rep();
-        mustHaveBooleanType(right, { at: e });
+        mustHaveBooleanType(right, { at: exps });
         left = core.binary("or", left, right, core.booleanType);
       }
       return left;
@@ -321,7 +311,7 @@ export default function analyze(match) {
       mustHaveBooleanType(left, { at: exp });
       for (let e of exps.children) {
         let right = e.rep();
-        mustHaveBooleanType(right, { at: e });
+        mustHaveBooleanType(right, { at: exps });
         left = core.binary("and", left, right, core.booleanType);
       }
       return left;
@@ -355,6 +345,8 @@ export default function analyze(match) {
     },
 
     Exp5_PrefixExpr(prefixOps, postfixExpr) {
+      let expression =
+        context.lookup(postfixExpr.sourceString) || postfixExpr.sourceString;
       let ops = [];
 
       const prefixArray = Array.isArray(prefixOps) ? prefixOps : [prefixOps];
@@ -367,17 +359,17 @@ export default function analyze(match) {
       let type;
 
       if (ops.some((op) => op === "++" || op === "--")) {
-        mustHaveIntegerType(postfixExpr, operand);
+        mustHaveIntegerType(expression, { at: prefixOps });
         type = core.intType;
       }
 
       if (ops.includes("-")) {
-        mustHaveNumericType(postfixExpr, operand);
+        mustHaveNumericType(expression, { at: prefixOps });
         type = operand.type || core.floatType;
       }
 
       if (ops.includes("not")) {
-        mustHaveBooleanType(postfixExpr, operand);
+        mustHaveBooleanType(expression, { at: prefixOps });
         type = core.booleanType;
       }
 
@@ -461,8 +453,6 @@ export default function analyze(match) {
           return core.numType;
         case "bool":
           return core.booleanType;
-        case "float":
-          return core.floatType;
         case "none":
           return core.noneType;
       }
