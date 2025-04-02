@@ -2,6 +2,7 @@
 
 # Quanco
 A language for the intersection of Rugby fans, and those who love general-purpose scripting languages, like Python and TypeScript.
+https://c44rson.github.io/Quanco
 
 ## Our Story
 One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use parentheses and curly brackets, slowing them down immensely. During this time of extreme peril, a genius idea came to them. Why would anyone want to use Java for anything? Unable to remember the syntax of Python or TypeScript, they made a language that spoke to them.
@@ -182,101 +183,16 @@ main();
 ```
 
 ### Semantic Checks
-JavaScript:
-'''
-[
-  [
     "variable declarations",
-    `readonly x: num
-     y: str`,
-  ],
-  [
     "variable assignments",
-    `readonly y: num = 0
-     z: str = "0"
-     a: bool = true
-     b: num = 0.0 - 1
-     c: none = none`,
-  ],
-  [
     "function without parameters",
-    `def f() -> void {
-        return
-     }`,
-  ],
-  [
     "function with parameters",
-    `def f(x: num, y: bool) -> bool {
-        return true
-    }`,
-  ],
-  [
     "void function",
-    `def f(x: bool) -> void {
-        return
-     }`,
-  ],
-  [
     "non-void function",
-    `def f(x: num) -> num {
-        return x 
-     }`,
-  ],
-  [
     "class without constructor",
-    `class c {
-        this.x: num = 1
-     }`,
-  ],
-  [
     "class with constructor",
-    `class d {
-        def __init__(self, x: bool) {
-            this.valid: bool = x
-        }
-     }`,
-  ],
-  [
     "class with method",
-    `class d {
-        def __init__(self, x: bool) {
-            this.valid: bool = x
-        }
-        def flipValid(self) -> void {
-            this.valid = not this.valid
-        }
-     }`,
-  ],
-  [
     "accessing class fields outside class",
-    `class d {
-        def __init__(self, x: bool) {
-            this.valid: bool = x
-        }
-        def flipValid(self) -> void {
-            this.valid = not this.valid
-        }
-     }
-     example: d = d(true)
-     variable: bool = d.valid`,
-  ],
-  [
     "breaking for loop",
-    `for i: num = 0, i < 5, ++i {
-        if i == 2 {
-            break
-        }
-     }`,
-  ],
-  [
     "breaking while loop",
-    `j: num = 0
-      while j <= 20 {
-        if j == 10 {
-          break
-        }
-        j += 2
-      }`,
-  ],
-];
-'''
+
