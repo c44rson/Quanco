@@ -1,0 +1,434 @@
+<!-- 
+  Hello 😊.
+
+  This template is designed and developed by Nisar Hassan Naqvi
+  for anyone to use for free or customize the way they like.
+
+  Github Repo: https://github.com/nisarhassan12/portfolio-template/
+  My Website: https://nisar.dev
+
+  For business & inquires, contact me => syednisarhassan12@gmail.com
+-->
+
+<!--
+  Follow the instructions written in comments to create your stunning portfolio
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" type="image/png" href="./images/favicon.png" />
+
+  <!-- Put your site title here -->
+  <title>
+    Quanco - A language for the intersection of Rugby fans, and those who love general-purpose scripting languages, like Python and TypeScript.
+  </title>
+
+  <meta name="description" content="Add small description of yourslef.">
+  <!-- Add some coding keywords below, Ex: (React, CSS etc) -->
+  <meta name="keywords" content="Put your name, skills and some coding keywords" />
+  <link rel="stylesheet" href="index.css" />
+</head>
+
+<body>
+
+  <!-- ***** Header ***** -->
+
+  <header class="header" role="banner" id="top">
+    <div class="row">
+      <nav class="nav" role="navigation">
+        <ul class="nav__items">
+          <li class="nav__item"><a href="#our-story" class="nav__link">Our Story</a></li>
+          <li class="nav__item"><a href="#examples" class="nav__link">Examples</a></li>
+          <li class="nav__item">
+            <a href="#about" class="nav__link">About</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class="header__text-box row">
+      <div class="header__text">
+        <h1 class="heading-primary">
+          <!-- Replace the following name with your name -->
+          <span>Quanco</span>
+          <img src="docs/QuancoLogo.png" width="600" height="600">
+        </h1>
+        <!-- Put a small paragraph about yourself -->
+        <p>A language for the intersection of Rugby fans, and those who love general-purpose scripting languages, like Python and TypeScript.</p>
+        
+        <a href="#about" class="btn btn--pink">About us</a>
+      </div>
+    </div>
+  </header>
+
+  <main role="main">
+
+    <!-- ***** Our Story ***** -->
+
+    <section class="our-story" id="our-story">
+      <div class="row">
+        <h2>Quanco</h2>
+        <div class="work__boxes">
+
+          <!-- Each div with the work__box class is a project. -->
+
+          <div class="work__box">
+            <div class="work__text">
+              <p>
+                One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use parentheses and curly brackets, slowing them down immensely. During this time of extreme peril, a genius idea came to them. Why would anyone want to use Java for anything? Unable to remember the syntax of Python or TypeScript, they made a language that spoke to them.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+
+  <!-- ***** Examples ***** -->
+    
+  <style>
+        pre {
+            background-color: #111111;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+  <section class="examples" id="examples">
+    <div class="row">
+      <h2>Example Programs</h2>
+<body>
+    <h3>Defining and Calling a Funciion</h3>
+    <h4>Quanco</h4>
+    <pre>
+<code>
+ruck greet(name: str) -> str {
+    pass "Try hard, " + name + "! Keep rucking!"
+}
+
+result: str = greet("Julian")
+print(result)
+result: str = greet(name="Carson")
+print(result)
+</code>
+    </pre>
+    <h4>JavaScript</h4>
+    <pre>
+<code>
+function greet(name) {
+    return `Try hard, ${name}! Keep rucking!`;
+}
+function main() {
+    let result = greet("Julian");
+    console.log(result);
+    result = greet("Carson");
+    console.log(result);
+}
+
+main();
+</code>
+    </pre>
+  <h3>Nested Loops</h3>
+    <h4>Quanco</h4>
+    <pre>
+<code>
+ruck scrum() -> void {
+    phase: int
+    tackle: int
+    for phase in range(1, 4) {
+        for tackle in range(1, 4) {
+            print("Phase " + phase + ", Tackle " + tackle + " : Drive forward!")
+        }
+    }
+}
+
+scrum()
+</code>
+    </pre>
+    <h4>JavaScript</h4>
+    <pre>
+<code>
+  function scrum() {
+    for (let phase = 1; phase <= 3; phase++) {
+        for (let tackle = 1; tackle <= 3; tackle++) {
+            console.log(`Phase ${phase}, Tackle ${tackle}: Drive forward!`);
+        }
+    }
+}
+
+scrum();
+</code>
+    </pre>
+          <h3>Recursion</h3>
+    <h4>Quanco</h4>
+    <pre>
+<code>
+ruck lineout(depth: int) -> int {
+    if depth == 0 {
+        pass 1
+    }
+    else {
+        pass depth * lineout(depth - 1)
+    }
+}
+
+result: int = lineout(5)
+print(result)
+</code>
+    </pre>
+    <h4>JavaScript</h4>
+    <pre>
+<code>
+function lineout(depth) {
+    if (depth === 0) {
+        return 1;
+    } else {
+        return depth * lineout(depth - 1);
+    }
+}
+
+function main() {
+    const result = lineout(5);
+    console.log(result);  // Output: 120
+}
+
+main();
+</code>
+    </pre>
+          <h3>Lists and Dictionaries</h3>
+    <h4>Quanco</h4>
+    <pre>
+<code>
+ruck maul() -> void {
+    players: list[str] = ["Julian", "Carson", "Ray"]
+    positions: dict[str, str] = {"Julian": "Flanker", "Carson": "Scrumhalf", "Ray": "Coach"}
+    player: str
+
+    for player in players {
+        position: str = positions.get(player, "sin bin")
+        print(player + " is in the " + position + " position")
+    }
+}
+
+maul()
+</code>
+    </pre>
+    <h4>JavaScript</h4>
+    <pre>
+<code>
+function maul() {
+    const players = ["Julian", "Carson", "Ray"];
+    const positions = { Julian: "Flyhalf", Carson: "Scrumhalf", Ray: "Coach" };
+
+    for (const player of players) {
+        const position = positions[player] || "sin bin";
+        console.log(`${player} is in the ${position} position`);
+    }
+}
+
+maul();
+</code>
+    </pre>
+           <h3>Structs and Classes</h3>
+    <h4>Quanco</h4>
+    <pre>
+<code>
+pitch RugbyPlayer {
+    ruck __init__(self, name: str, position: str, tries: int = 0) {
+        this.name: str = name
+        this.position: str = position
+        this.tries: int = tries
+    }
+
+    ruck scoreTry(self) -> void {
+        this.tries = 1
+        print(this.name + "scored a try! Total tries: " + this.tries)
+    }
+}
+
+optionalPlayer: RugbyPlayer | None = None
+player1: RugbyPlayer = RugbyPlayer("Julian", "Flanker")
+player1.scoreTry()
+
+optionalPlayer = RugbyPlayer("Carson", "Scrumhalf")
+optionalPlayer.scoreTry()
+</code>
+    </pre>
+    <h4>JavaScript</h4>
+    <pre>
+<code>
+class RugbyPlayer {
+    constructor(name, position, tries = 0) {
+        this.name = name;
+        this.position = position;
+        this.tries = tries;
+    }
+
+    scoreTry() {
+        this.tries += 1;
+        console.log(`${this.name} scored a try! Total tries: ${this.tries}`);
+    }
+}
+
+function main() {
+    let optionalPlayer = null;
+    const player1 = new RugbyPlayer("Julian", "Flyhalf");
+    player1.scoreTry();
+
+    optionalPlayer = new RugbyPlayer("Carson", "Scrumhalf");
+    optionalPlayer.scoreTry();
+}
+
+main();
+</code>
+    </pre>
+          <h3>Semantic Checks</h3>
+    <pre>
+<code>
+[
+  [
+    "variable declarations",
+    `readonly x: num
+     y: str`,
+  ],
+  [
+    "variable assignments",
+    `readonly y: num = 0
+     z: str = "0"
+     a: bool = true
+     b: num = 0.0 - 1
+     c: none = none`,
+  ],
+  [
+    "function without parameters",
+    `def f() -> void {
+        return
+     }`,
+  ],
+  [
+    "function with parameters",
+    `def f(x: num, y: bool) -> bool {
+        return true
+    }`,
+  ],
+  [
+    "void function",
+    `def f(x: bool) -> void {
+        return
+     }`,
+  ],
+  [
+    "non-void function",
+    `def f(x: num) -> num {
+        return x 
+     }`,
+  ],
+  [
+    "class without constructor",
+    `class c {
+        this.x: num = 1
+     }`,
+  ],
+  [
+    "class with constructor",
+    `class d {
+        def __init__(self, x: bool) {
+            this.valid: bool = x
+        }
+     }`,
+  ],
+  [
+    "class with method",
+    `class d {
+        def __init__(self, x: bool) {
+            this.valid: bool = x
+        }
+        def flipValid(self) -> void {
+            this.valid = not this.valid
+        }
+     }`,
+  ],
+  [
+    "accessing class fields outside class",
+    `class d {
+        def __init__(self, x: bool) {
+            this.valid: bool = x
+        }
+        def flipValid(self) -> void {
+            this.valid = not this.valid
+        }
+     }
+     example: d = d(true)
+     variable: bool = d.valid`,
+  ],
+  [
+    "breaking for loop",
+    `for i: num = 0, i < 5, ++i {
+        if i == 2 {
+            break
+        }
+     }`,
+  ],
+  [
+    "breaking while loop",
+    `j: num = 0
+      while j <= 20 {
+        if j == 10 {
+          break
+        }
+        j += 2
+      }`,
+  ],
+];
+</code>
+    </pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- ***** About ***** -->
+
+    <section class="about" id="about">
+      <div class="row">
+        <h2>About Julian</h2>
+        <div class="about__content">
+          <div class="about__text">
+            <p>
+              LMU CMSI 2026 and Loyola Rugby player. Co-Creator of Quanco
+            </p>
+          </div>
+        </div>
+        <h2>About Carson</h2>
+        <div class="about__content">
+          <div class="about__text">
+            <p>
+              LMU CMSI 2026 and Loyola Rugby president. Co-Creator of Quanco
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  
+  <!-- ***** Footer ***** -->
+
+  <footer role="contentinfo" class="footer">
+    <div class="row">  
+      <p>
+        https://github.com/c44rson/Quanco
+      </p>
+  </footer>
+
+  <a href="#top" class="back-to-top" title="Back to Top">
+    <img src="./images/arrow-up.svg" alt="Back to Top" class="back-to-top__image"/>
+  </a>
+  <script src="./index.js"></script>
+</body>
+
+</html>
