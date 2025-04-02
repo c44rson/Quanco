@@ -182,101 +182,16 @@ main();
 ```
 
 ### Semantic Checks
-JavaScript:
-'''
-[
-  [
     "variable declarations",
-    `readonly x: num
-     y: str`,
-  ],
-  [
     "variable assignments",
-    `readonly y: num = 0
-     z: str = "0"
-     a: bool = true
-     b: num = 0.0 - 1
-     c: none = none`,
-  ],
-  [
     "function without parameters",
-    `def f() -> void {
-        return
-     }`,
-  ],
-  [
     "function with parameters",
-    `def f(x: num, y: bool) -> bool {
-        return true
-    }`,
-  ],
-  [
     "void function",
-    `def f(x: bool) -> void {
-        return
-     }`,
-  ],
-  [
     "non-void function",
-    `def f(x: num) -> num {
-        return x 
-     }`,
-  ],
-  [
     "class without constructor",
-    `class c {
-        this.x: num = 1
-     }`,
-  ],
-  [
     "class with constructor",
-    `class d {
-        def __init__(self, x: bool) {
-            this.valid: bool = x
-        }
-     }`,
-  ],
-  [
     "class with method",
-    `class d {
-        def __init__(self, x: bool) {
-            this.valid: bool = x
-        }
-        def flipValid(self) -> void {
-            this.valid = not this.valid
-        }
-     }`,
-  ],
-  [
     "accessing class fields outside class",
-    `class d {
-        def __init__(self, x: bool) {
-            this.valid: bool = x
-        }
-        def flipValid(self) -> void {
-            this.valid = not this.valid
-        }
-     }
-     example: d = d(true)
-     variable: bool = d.valid`,
-  ],
-  [
     "breaking for loop",
-    `for i: num = 0, i < 5, ++i {
-        if i == 2 {
-            break
-        }
-     }`,
-  ],
-  [
     "breaking while loop",
-    `j: num = 0
-      while j <= 20 {
-        if j == 10 {
-          break
-        }
-        j += 2
-      }`,
-  ],
-];
-'''
+
