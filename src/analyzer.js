@@ -68,11 +68,6 @@ export default function analyze(match) {
     must(entity, `Identifier ${name} not declared`, at);
   }
 
-  function mustHaveNumericType(e, at) {
-    const expectedTypes = [core.numType];
-    must(expectedTypes.includes(e.type), "Expected a number", at);
-  }
-
   function mustHaveNumericOrStringType(e, at) {
     const expectedTypes = [core.numType, core.stringType];
     must(expectedTypes.includes(e.type), "Expected a number or string", at);
@@ -124,6 +119,7 @@ export default function analyze(match) {
   }
 
   function mustBeAssignable(e, { toType: type }, at) {
+    console.log(e, type);
     const source = typeDescription(e.type);
     const target = typeDescription(type);
     const message = `Cannot assign a ${source} to a ${target}`;

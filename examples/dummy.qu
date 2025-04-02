@@ -1,7 +1,1 @@
-j: num = 0
-while j <= 20 {
-    if j == 10 {
-        break
-    }
-    j += 2
-}
+x: bool = "2"

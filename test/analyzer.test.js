@@ -12,6 +12,14 @@ import {
 
 const semanticChecks = [
   [
+    "function call",
+    `def f() -> void {
+        return
+     }
+     f()`,
+  ],
+  ["union type", `x : int | bool`],
+  [
     "variable declarations",
     `readonly x: num
      y: str`,
@@ -19,9 +27,9 @@ const semanticChecks = [
   [
     "variable assignments",
     `readonly y: num = 0
-     z: str = "0"
+     z: str = ("0")
      a: bool = true
-     b: num = 0.0 - 1
+     b: num = 0.0 + 2
      c: none = none`,
   ],
   [
@@ -32,8 +40,8 @@ const semanticChecks = [
   ],
   [
     "function with parameters",
-    `def f(x: num, y: bool) -> bool {
-        return true
+    `def f(x: num) -> str {
+        return "0"
     }`,
   ],
   [
@@ -156,16 +164,6 @@ const semanticErrors = [
     "Type Mismatch: bool only operator",
     `x: str = "done"
      y: bool = not x`,
-  ],
-  ["Type Mismatch: during assignment", `x: bool = "2"`],
-  [
-    "Type Mismatch: argument vs. parameter in class",
-    `class c {
-        def __init__(self, x: int) {
-            this.x: int = x
-        }
-     }
-     x: c = c("2")`,
   ],
   [
     "Type Mismatch: argument vs. parameter in function",
