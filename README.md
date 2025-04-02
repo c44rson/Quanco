@@ -3,6 +3,8 @@
 # Quanco
 A language for the intersection of Rugby fans, and those who love general-purpose scripting languages, like Python and TypeScript.
 
+# Testing can edit
+
 ## Our Story
 One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use parentheses and curly brackets, slowing them down immensely. During this time of extreme peril, a genius idea came to them. Why would anyone want to use Java for anything? Unable to remember the syntax of Python or TypeScript, they made a language that spoke to them.
 
