@@ -21,7 +21,7 @@ const semanticChecks = [
     `readonly y: num = 0
      z: str = "0"
      a: bool = true
-     b: float = 0.0
+     b: num = 0.0 - 1
      c: none = none`,
   ],
   [
@@ -45,7 +45,7 @@ const semanticChecks = [
   [
     "non-void function",
     `def f(x: num) -> num {
-        return x
+        return x 
      }`,
   ],
   [
@@ -97,12 +97,12 @@ const semanticChecks = [
   [
     "breaking while loop",
     `j: num = 0
-     while j <= 20 {
+      while j <= 20 {
         if j == 10 {
-            break
+          break
         }
         j += 2
-     }`,
+      }`,
   ],
 ];
 const semanticErrors = [
@@ -157,7 +157,7 @@ const semanticErrors = [
     `x: str = "done"
      y: bool = not x`,
   ],
-  ["Type Mismatch: during assignment", `x: int = "2"`],
+  ["Type Mismatch: during assignment", `x: bool = "2"`],
   [
     "Type Mismatch: argument vs. parameter in class",
     `class c {

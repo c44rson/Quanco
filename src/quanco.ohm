@@ -22,7 +22,7 @@ Quanco {
   ConstructorDecl = def __init__ "(" Params? ")" Block
 
   Params = Param ("," Param)*
-  Param = ~self identifier ":" Type ("=" Exp)? -- regParam
+  Param = ~self identifier ":" Type -- regParam
         | self
 
   ReturnType = (Type | void)

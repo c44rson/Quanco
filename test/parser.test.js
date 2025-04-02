@@ -21,7 +21,7 @@ const syntaxChecks = [
   [
     "function with multiple parameters",
     `
-        def greet(name: str, age: int = 25) -> str {
+        def greet(name: str, age: num) -> str {
             return "Hello " + name
         }
     `,

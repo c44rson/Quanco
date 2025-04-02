@@ -7,7 +7,7 @@ class Context {
     locals = new Map(),
     inLoop = false,
     class: c = null,
-    function: f = null,
+    def: f = null,
   }) {
     Object.assign(this, {
       parent,
@@ -64,6 +64,10 @@ export default function analyze(match) {
     must(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
+  function mustHaveBeenFound(entity, name, at) {
+    must(entity, `Identifier ${name} not declared`, at);
+  }
+
   function mustHaveNumericType(e, at) {
     const expectedTypes = [core.numType];
     must(expectedTypes.includes(e.type), "Expected a number", at);
@@ -106,6 +110,64 @@ export default function analyze(match) {
     );
   }
 
+  function mustBeInAFunction(at) {
+    must(context.function, "Return can only appear in a function", at);
+  }
+
+  function mustReturnSomething(f, at) {
+    const returnsSomething = f.type.returnType !== core.voidType;
+    must(returnsSomething, "Cannot return a value from this function", at);
+  }
+
+  function mustBeReturnable(e, { from: f }, at) {
+    mustBeAssignable(e, { toType: f.type.returnType }, at);
+  }
+
+  function mustBeAssignable(e, { toType: type }, at) {
+    const source = typeDescription(e.type);
+    const target = typeDescription(type);
+    const message = `Cannot assign a ${source} to a ${target}`;
+    must(assignable(e.type, type), message, at);
+  }
+
+  function typeDescription(type) {
+    if (typeof type === "string") return type;
+    if (type.kind == "ClassType") return type.name;
+    if (type.kind == "FunctionType") {
+      const paramTypes = type.paramTypes.map(typeDescription).join(", ");
+      const returnType = typeDescription(type.returnType);
+      return `(${paramTypes})->${returnType}`;
+    }
+    return `${typeDescription(type.baseType)}?`;
+  }
+
+  function assignable(fromType, toType) {
+    return (
+      toType == core.anyType ||
+      equivalent(fromType, toType) ||
+      (fromType?.kind === "FunctionType" &&
+        toType?.kind === "FunctionType" &&
+        // covariant in return types
+        assignable(fromType.returnType, toType.returnType) &&
+        fromType.paramTypes.length === toType.paramTypes.length &&
+        // contravariant in parameter types
+        toType.paramTypes.every((t, i) =>
+          assignable(t, fromType.paramTypes[i])
+        ))
+    );
+  }
+
+  function isMutable(e) {
+    return (
+      (e?.kind === "Variable" && e.readonly !== "false") ||
+      (e?.kind === "PropertyExpression" && isMutable(e?.readonly))
+    );
+  }
+
+  function mustBeMutable(e, at) {
+    must(isMutable(e), "Cannot assign to immutable variable", at);
+  }
+
   // BOB THE BUILDER
   const builder = match.matcher.grammar.createSemantics().addOperation("rep", {
     Program(statements) {
@@ -142,18 +204,29 @@ export default function analyze(match) {
       }
       context.add(id.sourceString, fun);
 
-      context = context.newChildContext({ inLoop: false, function: fun });
-      fun.params = parameters.rep();
+      context = context.newChildContext({ inLoop: false, def: fun });
 
-      const paramTypes = fun.params.map((param) => param.type);
-      const returnType = type.children?.[0]?.rep() ?? core.voidType;
+      const paramTypes = parameters.children.map((param) => {
+        const paramName = param.children[0].sourceString;
+        const paramType = param.children[1].rep();
+
+        const paramTypeObj = core[paramType];
+        return { name: paramName, type: paramTypeObj };
+      });
+
+      fun.params = paramTypes.map((p) => p.name);
+
+      const returnType = type.children?.[0]?.rep() || core.voidType;
+
+      fun.type = core.functionType(
+        paramTypes.map((p) => p.type),
+        returnType
+      );
 
       fun.body = block.rep();
 
-      fun.type = core.functionType(paramTypes, returnType);
-
-      // Go back up to the outer context before returning
       context = context.parent;
+
       return core.functionDeclaration(fun);
     },
 
@@ -163,7 +236,7 @@ export default function analyze(match) {
 
       context = context.newChildContext({
         inLoop: false,
-        function: constructor,
+        def: constructor,
       });
       constructor.params = parameters.rep();
 
@@ -181,16 +254,25 @@ export default function analyze(match) {
     ReturnType(type) {
       if (type.sourceString === "void") {
         return core.voidType;
+      } else if (type.sourceString === "bool") {
+        return core.booleanType;
+      } else if (type.sourceString === "num") {
+        return core.numType;
       } else {
-        return type.rep();
+        return core.stringType;
       }
     },
 
     ReturnStmt_longReturn(_return, exp) {
-      return core.returnStatement(exp.rep());
+      mustBeInAFunction({ at: _return });
+      mustReturnSomething(context.function, { at: _return });
+      let returnExp = exp.rep();
+      mustBeReturnable(returnExp, { from: context.function }, { at: exp });
+      return core.returnStatement(returnExp);
     },
 
     ReturnStmt_shortReturn(_return) {
+      mustBeInAFunction({ at: _return });
       return core.shortReturnStatement;
     },
 
@@ -201,12 +283,7 @@ export default function analyze(match) {
       const classAffil = context.class;
       const name = id.sourceString;
       const initializer = exp.rep();
-      const variable = core.variable(
-        readonly,
-        classAffil,
-        name,
-        type.sourceString
-      );
+      const variable = core.variable(readonly, classAffil, name, type.rep());
 
       context.add(id.sourceString, variable);
 
@@ -218,6 +295,16 @@ export default function analyze(match) {
     },
 
     Assignment(lval, _eq, expr) {
+      const target = lval.rep();
+      const source = expr.rep();
+      mustBeAssignable(
+        source,
+        { toType: context.lookup(target).type },
+        { at: lval }
+      );
+      mustBeMutable(context.lookup(target), { at: lval });
+      const entity = context.lookup(lval.sourceString);
+      mustHaveBeenFound(entity, lval.sourceString, { at: lval });
       return core.assignment(lval.rep(), expr.rep());
     },
 
@@ -267,26 +354,16 @@ export default function analyze(match) {
       return core.ifStatement(test, consequentBlock, alternates, finalBlock);
     },
 
-    Params(_self, _comma, paramList) {
-      return paramList.children.map((p) => p.rep());
+    Params(param, _comma, paramList) {
+      const params = [param.rep(), ...paramList.children.map((p) => p.rep())];
+      return params;
     },
 
-    Param(node) {
-      const [id, _colon, type, _eq, exp] = node.children;
-
-      mustNotAlreadyBeDeclared(id.sourceString, { at: node });
-
-      const param = core.variable(
-        false,
-        context.class,
-        id.sourceString,
-        type.rep()
-      );
-      const initializer = exp.rep();
-
+    Param_regParam(id, _colon, type) {
+      const param = core.variable(false, context.class, id, type.rep());
+      mustNotAlreadyBeDeclared(param.name, { at: id });
       context.add(param.name, param);
-
-      return core.variableDeclaration(param, initializer);
+      return param;
     },
 
     BreakStmt(breakKeyword) {
@@ -427,8 +504,8 @@ export default function analyze(match) {
       return core.parenExpr(exp.rep());
     },
 
-    BooleanLit(bool) {
-      return Boolean(bool);
+    BooleanLit(_) {
+      return core.booleanType;
     },
 
     identifier(_this, _dot, firstChar, rest) {
@@ -483,13 +560,10 @@ export default function analyze(match) {
     },
 
     number(_whole, _point, _fraction, _e, _digits) {
-      // only have numbers
       return Number(this.sourceString);
     },
 
     string(_openQuote, _chars, _closeQuote) {
-      // Carlos strings will be represented as plain JS strings, including
-      // the quotation marks
       return String(this.sourceString);
     },
   });

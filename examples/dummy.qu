@@ -1,3 +1,7 @@
-def f() -> bool {
-    return true
+j: num = 0
+while j <= 20 {
+    if j == 10 {
+        break
+    }
+    j += 2
 }
