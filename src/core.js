@@ -48,6 +48,13 @@ export function assignment(target, source) {
 }
 
 // STATEMENTS
+export function functionCall(callee, args) {
+  return { kind: "FunctionCall", callee, args };
+}
+
+export function constructorCall(callee, args) {
+  return { kind: "ConstructorCall", callee, args, type: callee };
+}
 
 export function forStatement(iterator, condition, step, body) {
   return { kind: "ForStatement", iterator, condition, step, body };
@@ -72,6 +79,10 @@ export const breakStatement = { kind: "BreakStatement" };
 // EXPRESSIONS
 export function parenExpr(exp) {
   return { kind: "ParenthesizedExpression", exp };
+}
+
+export function propertyExpression(base, prop) {
+  return { kind: "PropertyExpression", base, prop };
 }
 
 export function binary(op, left, right, type) {

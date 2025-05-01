@@ -64,8 +64,13 @@ export default function analyze(match) {
     must(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
-  function mustHaveBeenFound(entity, name, at) {
-    must(entity, `Identifier ${name} not declared`, at);
+  function mustHaveBeenFound(name, at) {
+    must(context.lookup(name), `Identifier ${name} not declared`, at);
+  }
+
+  function mustHaveNumericType(e, at) {
+    const expectedTypes = [core.numType];
+    must(expectedTypes.includes(e.type), "Expected a number", at);
   }
 
   function mustHaveNumericOrStringType(e, at) {
@@ -82,19 +87,11 @@ export default function analyze(match) {
   }
 
   function mustBothHaveTheSameType(e1, e2, at) {
-    must(
-      equivalent(e1.type, e2.type),
-      "Operands do not have the same type",
-      at
-    );
+    must(equivalent(e1, e2), "Operands do not have the same type", at);
   }
 
   function equivalent(t1, t2) {
-    return (
-      t1 === t2 ||
-      (t1 === "str" && t2 === "num") ||
-      (t1 === "num" && t2 === "str")
-    );
+    return t1 == t2;
   }
 
   function mustBeInAFunction(at) {
@@ -111,26 +108,33 @@ export default function analyze(match) {
   }
 
   function mustBeAssignable(e, { toType: type }, at) {
-    const source = typeDescription(e.type);
-    const target = typeDescription(type);
+    const source = e.type;
+    const target = type;
     const message = `Cannot assign a ${source} to a ${target}`;
     must(assignable(e.type, type), message, at);
-  }
-
-  function typeDescription(type) {
-    if (typeof type === "string") return type;
   }
 
   function assignable(fromType, toType) {
     return (
       toType == core.anyType ||
       equivalent(fromType, toType) ||
-      fromType.paramTypes.length === toType.paramTypes.length
+      (fromType?.kind === "FunctionType" &&
+        toType?.kind === "FunctionType" &&
+        // covariant in return types
+        assignable(fromType.returnType, toType.returnType) &&
+        fromType.paramTypes.length === toType.paramTypes.length &&
+        // contravariant in parameter types
+        toType.paramTypes.every((t, i) =>
+          assignable(t, fromType.paramTypes[i])
+        ))
     );
   }
 
   function isMutable(e) {
-    return e?.kind === "Variable" && e.readonly !== "false";
+    return (
+      (e?.kind === "Variable" && e.readonly !== "false") ||
+      (e?.kind === "PropertyExpression" && isMutable(e?.readonly))
+    );
   }
 
   function mustBeMutable(e, at) {
@@ -185,7 +189,7 @@ export default function analyze(match) {
 
       fun.params = paramTypes.map((p) => p.name);
 
-      const returnType = type.children?.[0]?.rep();
+      const returnType = type.children?.[0]?.rep() || core.voidType;
 
       fun.type = core.functionType(
         paramTypes.map((p) => p.type),
@@ -220,6 +224,18 @@ export default function analyze(match) {
       return core.constructorDeclaration(constructor);
     },
 
+    ReturnType(type) {
+      if (type.sourceString === "void") {
+        return core.voidType;
+      } else if (type.sourceString === "bool") {
+        return core.booleanType;
+      } else if (type.sourceString === "num") {
+        return core.numType;
+      } else {
+        return core.stringType;
+      }
+    },
+
     ReturnStmt_longReturn(_return, exp) {
       mustBeInAFunction({ at: _return });
       mustReturnSomething(context.function, { at: _return });
@@ -239,8 +255,10 @@ export default function analyze(match) {
       const readonly = modifier.sourceString === "readonly";
       const classAffil = context.class;
       const name = id.sourceString;
+      const typeR = type.rep();
       const initializer = exp.rep();
-      const variable = core.variable(readonly, classAffil, name, type.rep());
+      mustBothHaveTheSameType(typeR, initializer, { at: initializer });
+      const variable = core.variable(readonly, classAffil, name, typeR);
 
       context.add(id.sourceString, variable);
 
@@ -252,17 +270,12 @@ export default function analyze(match) {
     },
 
     Assignment(lval, _eq, expr) {
-      const target = lval.rep();
+      mustHaveBeenFound(lval.sourceString, { at: lval });
+      const target = context.lookup(lval.sourceString);
       const source = expr.rep();
-      mustBeAssignable(
-        source,
-        { toType: context.lookup(target).type },
-        { at: lval }
-      );
-      mustBeMutable(context.lookup(target), { at: lval });
-      const entity = context.lookup(lval.sourceString);
-      mustHaveBeenFound(entity, lval.sourceString, { at: lval });
-      return core.assignment(lval.rep(), expr.rep());
+      mustBothHaveTheSameType(target.type, source, { at: expr });
+      mustBeMutable(target, { at: lval });
+      return core.assignment(target, source);
     },
 
     // STATEMENTS
@@ -300,9 +313,15 @@ export default function analyze(match) {
       const test = condition.rep();
       const consequentBlock = consequent.rep();
 
-      const finalBlock = final.rep();
+      const alternates = elif_conditions.children.map((e, idx) => {
+        const elifCondition = e.rep();
+        const elifBlock = elif_blocks.children[idx].rep();
+        return { condition: elifCondition, block: elifBlock };
+      });
 
-      return core.ifStatement(test, consequentBlock, finalBlock);
+      const finalBlock = final ? final.rep() : null;
+
+      return core.ifStatement(test, consequentBlock, alternates, finalBlock);
     },
 
     Params(param, _comma, paramList) {
@@ -323,6 +342,27 @@ export default function analyze(match) {
     },
 
     // EXPR
+    Exp_OrExpr(exp, _ops, exps) {
+      let left = exp.rep();
+      mustHaveBooleanType(left, { at: exp });
+      for (let e of exps.children) {
+        let right = e.rep();
+        mustHaveBooleanType(right, { at: exps });
+        left = core.binary("or", left, right, core.booleanType);
+      }
+      return left;
+    },
+
+    Exp1_AndExpr(exp, _ops, exps) {
+      let left = exp.rep();
+      mustHaveBooleanType(left, { at: exp });
+      for (let e of exps.children) {
+        let right = e.rep();
+        mustHaveBooleanType(right, { at: exps });
+        left = core.binary("and", left, right, core.booleanType);
+      }
+      return left;
+    },
 
     Exp2_CompareExpr(exp1, relop, exp2) {
       const [left, op, right] = [exp1.rep(), relop.sourceString, exp2.rep()];
@@ -337,16 +377,26 @@ export default function analyze(match) {
       const [left, op, right] = [exp1.rep(), addOp.sourceString, exp2.rep()];
       if (op === "+") {
         mustHaveNumericOrStringType(left, { at: exp1 });
+      } else {
+        mustHaveNumericType(left, { at: exp1 });
       }
       mustBothHaveTheSameType(left, right, { at: addOp });
       return core.binary(op, left, right, left.type);
     },
 
+    Exp4_MulExpr(exp1, mulOp, exp2) {
+      const [left, op, right] = [exp1.rep(), mulOp.sourceString, exp2.rep()];
+      mustHaveNumericType(left, { at: exp1 });
+      mustBothHaveTheSameType(left, right, { at: mulOp });
+      return core.binary(op, left, right, left.type);
+    },
+
     Exp5_PrefixExpr(prefixOps, postfixExpr) {
-      let expression = context.lookup(postfixExpr.sourceString);
+      let expression =
+        context.lookup(postfixExpr.sourceString) || postfixExpr.sourceString;
       let ops = [];
 
-      const prefixArray = [prefixOps];
+      const prefixArray = Array.isArray(prefixOps) ? prefixOps : [prefixOps];
 
       prefixArray.forEach((opNode) => {
         ops.push(opNode.sourceString);
@@ -358,6 +408,11 @@ export default function analyze(match) {
       if (ops.some((op) => op === "++" || op === "--")) {
         mustHaveIntegerType(expression, { at: prefixOps });
         type = core.intType;
+      }
+
+      if (ops.includes("-")) {
+        mustHaveNumericType(expression, { at: prefixOps });
+        type = operand.type || core.floatType;
       }
 
       if (ops.includes("not")) {
@@ -374,9 +429,45 @@ export default function analyze(match) {
 
       let operationList = [];
 
-      ops = ops;
+      ops = Array.isArray(ops) ? ops : [];
+
+      ops.forEach((op) => {
+        if (op.kind === "PropertyExpression") {
+          const prop = op.identifier.sourceString;
+          operationList.push(op.sourceString);
+          result = core.propertyExpression(result, prop);
+        } else if (op.kind === "FunctionCall") {
+          const args = op.ArgList ? op.ArgList.rep() : [];
+          operationList.push(op.sourceString);
+          result = core.functionCall(result, args);
+        }
+      });
 
       return core.postfixExpression(operationList, base, result.type);
+    },
+
+    PropertyOp(_dot, id) {
+      const base = this.children[0].rep();
+      const prop = id.sourceString;
+      return core.propertyExpression(base, prop);
+    },
+
+    CallOp(_open, ArgList, _close) {
+      const callee = this.children[0].rep();
+      const args = ArgList ? ArgList.rep() : [];
+      return core.functionCall(callee, args);
+    },
+
+    ArgList(exp, _comma, exps) {
+      const args = [exp.rep()];
+
+      if (exps) {
+        exps.forEach((e) => {
+          args.push(e.rep());
+        });
+      }
+
+      return args;
     },
 
     ParenExpr(_open, exp, _close) {
@@ -389,6 +480,7 @@ export default function analyze(match) {
 
     identifier(_this, _dot, firstChar, rest) {
       const name = firstChar.sourceString + rest.sourceString;
+      mustHaveBeenFound(name, { at: firstChar });
       return name;
     },
 
@@ -420,6 +512,12 @@ export default function analyze(match) {
 
     LValue(firstId, _dot, rest) {
       let base = firstId.sourceString;
+
+      for (let dotAndId of rest.children) {
+        const prop = dotAndId.children[1].sourceString;
+        base = core.propertyExpression(base, prop);
+      }
+
       return base;
     },
 
@@ -428,16 +526,15 @@ export default function analyze(match) {
     },
 
     _terminal() {
-      const value = this.sourceString;
-      return value;
+      return this.sourceString;
     },
 
     number(_whole, _point, _fraction, _e, _digits) {
-      return Number(this.sourceString);
+      return core.numType;
     },
 
     string(_openQuote, _chars, _closeQuote) {
-      return String(this.sourceString);
+      return core.stringType;
     },
   });
   /* One line to run it */

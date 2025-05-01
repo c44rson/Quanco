@@ -4,5 +4,5 @@ def greet(name: str) -> str {
 
 result: str = greet("Julian")
 print(result)
-result: str = greet(name="Carson")
+result = greet(name="Carson")
 print(result)
