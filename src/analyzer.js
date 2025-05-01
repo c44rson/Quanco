@@ -284,8 +284,10 @@ export default function analyze(match) {
     Assignment(lval, _eq, expr) {
       mustHaveBeenFound(lval.sourceString, { at: lval });
 
+      const sourceL = context.lookup(expr.sourceString);
+
       const target = context.lookup(lval.sourceString);
-      const source = expr.rep();
+      const source = sourceL ? sourceL : expr.rep();
 
       mustBothHaveTheSameType(target.type, source, { at: expr });
       mustBeMutable(target, { at: lval });
@@ -407,10 +409,16 @@ export default function analyze(match) {
     },
 
     Exp4_MulExpr(exp1, mulOp, exp2) {
-      const [left, op, right] = [exp1.rep(), mulOp.sourceString, exp2.rep()];
-      mustHaveNumericType(left, { at: exp1 });
+      const exp1L = context.lookup(exp1.sourceString);
+      const exp2L = context.lookup(exp2.sourceString);
+      const [left, op, right] = [
+        exp1L ? exp1L : exp1.rep(),
+        mulOp.sourceString,
+        exp2L ? exp2L : exp2.rep(),
+      ];
+      const type = mustHaveNumericType(left, { at: exp1 });
       mustBothHaveTheSameType(left, right, { at: mulOp });
-      return core.binary(op, left, right, core.numType);
+      return core.binary(op, left, right, type);
     },
 
     Exp5_PrefixExpr(prefixOps, postfixExpr) {
