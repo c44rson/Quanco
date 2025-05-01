@@ -61,7 +61,7 @@ Quanco {
   Exp4  = Exp4 ("*" | "/") Exp5				        --MulExpr
 	| Exp5
   
-  Exp5  = (unaryInc | unaryDec | "-" | "not") Exp6  		--PrefixExpr
+  Exp5  = (unaryInc | unaryDec | "not") Exp6  		      --PrefixExpr
   	| Exp6
   
   Exp6  = Exp6 (PropertyOp | CallOp)*				--PostfixExpr

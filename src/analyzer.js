@@ -70,20 +70,32 @@ export default function analyze(match) {
 
   function mustHaveNumericType(e, at) {
     const expectedTypes = [core.numType];
-    must(expectedTypes.includes(e.type), "Expected a number", at);
+    if (e.kind === "Variable") {
+      let theType = e.type;
+      must(expectedTypes.includes(theType), "Expected a number", at);
+      return theType;
+    } else {
+      let theType = e;
+      must(expectedTypes.includes(theType), "Expected a number", at);
+      return theType;
+    }
   }
 
   function mustHaveNumericOrStringType(e, at) {
     const expectedTypes = [core.numType, core.stringType];
-    must(expectedTypes.includes(e.type), "Expected a number or string", at);
+    if (e.kind === "Variable") {
+      let theType = e.type;
+      must(expectedTypes.includes(theType), "Expected a number or string", at);
+      return theType;
+    } else {
+      let theType = e;
+      must(expectedTypes.includes(theType), "Expected a number or string", at);
+      return theType;
+    }
   }
 
   function mustHaveBooleanType(e, at) {
     must(e.type === core.booleanType, "Expected a boolean", at);
-  }
-
-  function mustHaveIntegerType(e, at) {
-    must(e.type === core.numType, "Expected an integer", at);
   }
 
   function mustBothHaveTheSameType(e1, e2, at) {
@@ -91,7 +103,7 @@ export default function analyze(match) {
   }
 
   function equivalent(t1, t2) {
-    return t1 == t2;
+    return t1 == t2 || t1 == t2.type || t1.type == t2;
   }
 
   function mustBeInAFunction(at) {
@@ -271,8 +283,10 @@ export default function analyze(match) {
 
     Assignment(lval, _eq, expr) {
       mustHaveBeenFound(lval.sourceString, { at: lval });
+
       const target = context.lookup(lval.sourceString);
       const source = expr.rep();
+
       mustBothHaveTheSameType(target.type, source, { at: expr });
       mustBeMutable(target, { at: lval });
       return core.assignment(target, source);
@@ -374,26 +388,33 @@ export default function analyze(match) {
     },
 
     Exp3_AddExpr(exp1, addOp, exp2) {
-      const [left, op, right] = [exp1.rep(), addOp.sourceString, exp2.rep()];
+      const exp1L = context.lookup(exp1.sourceString);
+      const exp2L = context.lookup(exp2.sourceString);
+      const [left, op, right] = [
+        exp1L ? exp1L : exp1.rep(),
+        addOp.sourceString,
+        exp2L ? exp2L : exp2.rep(),
+      ];
       if (op === "+") {
-        mustHaveNumericOrStringType(left, { at: exp1 });
+        const type = mustHaveNumericOrStringType(left, { at: exp1 });
+        mustBothHaveTheSameType(left, right, { at: addOp });
+        return core.binary(op, left, right, type);
       } else {
-        mustHaveNumericType(left, { at: exp1 });
+        const type = mustHaveNumericType(left, { at: exp1 });
+        mustBothHaveTheSameType(left, right, { at: addOp });
+        return core.binary(op, left, right, type);
       }
-      mustBothHaveTheSameType(left, right, { at: addOp });
-      return core.binary(op, left, right, left.type);
     },
 
     Exp4_MulExpr(exp1, mulOp, exp2) {
       const [left, op, right] = [exp1.rep(), mulOp.sourceString, exp2.rep()];
       mustHaveNumericType(left, { at: exp1 });
       mustBothHaveTheSameType(left, right, { at: mulOp });
-      return core.binary(op, left, right, left.type);
+      return core.binary(op, left, right, core.numType);
     },
 
     Exp5_PrefixExpr(prefixOps, postfixExpr) {
-      let expression =
-        context.lookup(postfixExpr.sourceString) || postfixExpr.sourceString;
+      let expression = context.lookup(postfixExpr.sourceString);
       let ops = [];
 
       const prefixArray = Array.isArray(prefixOps) ? prefixOps : [prefixOps];
@@ -406,17 +427,12 @@ export default function analyze(match) {
       let type;
 
       if (ops.some((op) => op === "++" || op === "--")) {
-        mustHaveIntegerType(expression, { at: prefixOps });
-        type = core.intType;
-      }
-
-      if (ops.includes("-")) {
-        mustHaveNumericType(expression, { at: prefixOps });
-        type = operand.type || core.floatType;
+        mustHaveNumericType(expression.type, { at: postfixExpr });
+        type = core.numType;
       }
 
       if (ops.includes("not")) {
-        mustHaveBooleanType(expression, { at: prefixOps });
+        mustHaveBooleanType(expression.type, { at: postfixExpr });
         type = core.booleanType;
       }
 
@@ -424,7 +440,7 @@ export default function analyze(match) {
     },
 
     Exp6_PostfixExpr(baseExpr, ops) {
-      const base = baseExpr.rep();
+      const base = context.lookup(baseExpr.sourceString);
       let result = base;
 
       let operationList = [];
@@ -475,6 +491,7 @@ export default function analyze(match) {
     },
 
     BooleanLit(_) {
+      // split up true and false bools
       return core.booleanType;
     },
 
