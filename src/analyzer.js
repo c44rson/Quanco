@@ -611,7 +611,7 @@ export default function analyze(match) {
       return this.sourceString;
     },
 
-    number(_whole, _point, _fraction, _e, _digits) {
+    number(_neg, _whole, _point, _fraction, _e, _digits) {
       return Number(this.sourceString);
     },
 

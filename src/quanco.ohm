@@ -80,7 +80,7 @@ Quanco {
   string = "\"" (~"\"" any)* "\""
          | "'" (~"'" any)* "'"
 
-  number = digit+ ("." digit+)? (("e" | "E") digit+)?
+  number = "-"? digit+ ("." digit+)? (("e" | "E") digit+)?
 
   BooleanLit = true | false
 
