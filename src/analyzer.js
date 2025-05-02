@@ -70,7 +70,7 @@ export default function analyze(match) {
 
   function mustHaveNumericType(e, at) {
     const expectedTypes = [core.numType];
-    if (e.kind === "Variable") {
+    if (e.kind) {
       let theType = e.type;
       must(expectedTypes.includes(theType), "Expected a number", at);
       return theType;
@@ -83,7 +83,7 @@ export default function analyze(match) {
 
   function mustHaveNumericOrStringType(e, at) {
     const expectedTypes = [core.numType, core.stringType];
-    if (e.kind === "Variable") {
+    if (e.kind) {
       let theType = e.type;
       must(expectedTypes.includes(theType), "Expected a number or string", at);
       return theType;
@@ -375,6 +375,9 @@ export default function analyze(match) {
     Exp_OrExpr(exp, _ops, exps) {
       const exp1L = context.lookup(exp.sourceString);
       let left = exp1L ? exp1L : exp.rep();
+      if (left.kind) {
+        left = left.type;
+      }
       mustHaveBooleanType(left, { at: exp });
       for (let e of exps.children) {
         const exp2L = context.lookup(e.sourceString);
@@ -386,10 +389,15 @@ export default function analyze(match) {
     },
 
     Exp1_AndExpr(exp, _ops, exps) {
-      let left = exp.rep();
+      const exp1L = context.lookup(exp.sourceString);
+      let left = exp1L ? exp1L : exp.rep();
+      if (left.kind) {
+        left = left.type;
+      }
       mustHaveBooleanType(left, { at: exp });
       for (let e of exps.children) {
-        let right = e.rep();
+        const exp2L = context.lookup(e.sourceString);
+        let right = exp2L ? exp2L : e.rep();
         mustHaveBooleanType(right, { at: exps });
         left = core.binary("and", left, right, core.booleanType);
       }
@@ -397,7 +405,18 @@ export default function analyze(match) {
     },
 
     Exp2_CompareExpr(exp1, relop, exp2) {
-      const [left, op, right] = [exp1.rep(), relop.sourceString, exp2.rep()];
+      const exp1L = context.lookup(exp1.sourceString);
+      const exp2L = context.lookup(exp2.sourceString);
+      let [left, op, right] = [
+        exp1L ? exp1L : exp1.rep(),
+        relop.sourceString,
+        exp2L ? exp2L : exp2.rep(),
+      ];
+
+      if (left.kind) {
+        left = left.type;
+      }
+
       if (["<", "<=", ">", ">="].includes(op)) {
         mustHaveNumericOrStringType(left, { at: exp1 });
       }
@@ -432,11 +451,16 @@ export default function analyze(match) {
     Exp4_MulExpr(exp1, mulOp, exp2) {
       const exp1L = context.lookup(exp1.sourceString);
       const exp2L = context.lookup(exp2.sourceString);
-      const [left, op, right] = [
+      let [left, op, right] = [
         exp1L ? exp1L : exp1.rep(),
         mulOp.sourceString,
         exp2L ? exp2L : exp2.rep(),
       ];
+
+      if (left.kind) {
+        left = left.type;
+      }
+
       const type = mustHaveNumericType(left, { at: exp1 });
       mustBothHaveTheSameType(left, right, { at: mulOp });
       return core.binary(op, left, right, type);
