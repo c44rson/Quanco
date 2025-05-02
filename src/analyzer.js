@@ -112,7 +112,9 @@ export default function analyze(match) {
   }
 
   function equivalent(t1, t2) {
-    return t1 == t2 || t1 == t2.type || t1.type == t2 || t1.type == t2.type;
+    const e1 = t1.kind ? t1.type : t1;
+    const e2 = t2.kind ? t2.type : t2;
+    return e1 === e2;
   }
 
   function mustBeInAFunction(at) {
@@ -279,9 +281,9 @@ export default function analyze(match) {
       const typeR = type.rep();
       const initializer = exp.rep();
 
-      initializer.forEach((child) =>
-        mustBothHaveTheSameType(typeR, child, { at: child })
-      );
+      initializer.forEach((child) => {
+        mustBothHaveTheSameType(typeR, child, { at: exp });
+      });
 
       const variable = core.variable(readonly, classAffil, name, typeR);
       context.add(id.sourceString, variable);
@@ -371,10 +373,12 @@ export default function analyze(match) {
 
     // EXPR
     Exp_OrExpr(exp, _ops, exps) {
-      let left = exp.rep();
+      const exp1L = context.lookup(exp.sourceString);
+      let left = exp1L ? exp1L : exp.rep();
       mustHaveBooleanType(left, { at: exp });
       for (let e of exps.children) {
-        let right = e.rep();
+        const exp2L = context.lookup(e.sourceString);
+        let right = exp2L ? exp2L : e.rep();
         mustHaveBooleanType(right, { at: exps });
         left = core.binary("or", left, right, core.booleanType);
       }
@@ -404,11 +408,16 @@ export default function analyze(match) {
     Exp3_AddExpr(exp1, addOp, exp2) {
       const exp1L = context.lookup(exp1.sourceString);
       const exp2L = context.lookup(exp2.sourceString);
-      const [left, op, right] = [
+      let [left, op, right] = [
         exp1L ? exp1L : exp1.rep(),
         addOp.sourceString,
         exp2L ? exp2L : exp2.rep(),
       ];
+
+      if (left.kind) {
+        left = left.type;
+      }
+
       if (op === "+") {
         const type = mustHaveNumericOrStringType(left, { at: exp1 });
         mustBothHaveTheSameType(left, right, { at: addOp });
