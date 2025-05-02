@@ -1,3 +1,4 @@
-for c: num = 1, c < 10, c - 1 {
-    x: num = -100
+x: num = 1
+for c: num = 11, c >= x, --x {
+    d: num
 }

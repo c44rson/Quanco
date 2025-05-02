@@ -39,8 +39,8 @@ export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
 }
 
-export function variable(readonly, classAffil, name, type) {
-  return { kind: "Variable", readonly, classAffil, name, type };
+export function variable(readonly, classAffil, name, type, value) {
+  return { kind: "Variable", readonly, classAffil, name, type, value };
 }
 
 export function assignment(target, source) {

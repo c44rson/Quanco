@@ -54,18 +54,120 @@ export default function analyze(match) {
   }
 
   // HELPER FUNCTIONS
+  function evaluateIteratively(root) {
+    let current = root;
+    const stack = [];
+
+    while (current.kind === "BinaryExpression") {
+      stack.push(current);
+      current = current.left;
+    }
+
+    let result = evaluateLeaf(current);
+
+    while (stack.length > 0) {
+      const node = stack.pop();
+      const rightVal = evaluateLeaf(node.right);
+
+      switch (node.op) {
+        case "+":
+          result += rightVal;
+          break;
+        case "-":
+          result -= rightVal;
+          break;
+        case "*":
+          result *= rightVal;
+          break;
+        case "/":
+          result /= rightVal;
+          break;
+        default:
+          throw new Error(`Unsupported operator: ${node.op}`);
+      }
+    }
+
+    return result;
+  }
+
+  function evaluateLeaf(node) {
+    switch (node.kind) {
+      case undefined:
+        return node;
+      case "Variable":
+        return node.value[0];
+      case "BinaryExpression":
+        return evaluateIteratively(node);
+      default:
+        throw new Error(`Unsupported node kind: ${node.kind}`);
+    }
+  }
 
   // MUST RULES
   function mustBeInLoop(at) {
     must(context.inLoop, "Break can only appear in a loop", at);
   }
 
-  function mustNotAlreadyBeDeclared(name, at) {
-    must(!context.lookup(name), `Identifier ${name} already declared`, at);
+  function mustNotBeInfiniteForLoop(it, con, step, at) {
+    let itL = context.lookup(it.variable.value[0]);
+    let itRootValue = itL ? itL.value[0] : it.variable.value[0];
+    let conL = context.lookup(con.right);
+    let conRootValue = conL ? conL.value[0] : con.right;
+
+    const finalIteratorValue = evaluateIteratively(itRootValue);
+    const finalConValue = evaluateIteratively(conRootValue);
+
+    console.log(finalConValue);
+
+    let greaterThanOrEqual = finalIteratorValue >= finalConValue;
+
+    const positiveStepOperators = ["++", "+"];
+    const positiveConOperators = [">=", ">"];
+
+    let posStepOp = positiveStepOperators.includes(step.op);
+    let posConOp = positiveConOperators.includes(con.op);
+
+    let infinite =
+      (greaterThanOrEqual && posStepOp && posConOp) ||
+      (!greaterThanOrEqual && !posStepOp && !posConOp);
+    must(!infinite, `Infinite loop detected`, at);
+  }
+
+  function mustBeExecutableLoop(it, con, at) {
+    let itL = context.lookup(it.variable.value[0]);
+    let itRootValue = itL ? itL.value[0] : it.variable.value[0];
+    let conL = context.lookup(con.right);
+    let conRootValue = conL ? conL.value[0] : con.right;
+
+    const finalIteratorValue = evaluateIteratively(itRootValue);
+    const finalConValue = evaluateIteratively(conRootValue);
+
+    let greaterThan = finalIteratorValue > finalConValue;
+    let equal = finalIteratorValue === finalConValue;
+
+    let overlap =
+      equal && (con.op === "==" || con.op === ">=" || con.op || "<=")
+        ? true
+        : greaterThan && (con.op == ">" || con.op == ">=")
+        ? true
+        : !greaterThan && (con.op == "<" || con.op == "<=" ? true : false);
+    must(overlap, `Loop never executes`, at);
+  }
+
+  function mustNotAlreadyBeDefined(name, at) {
+    must(!context.lookup(name), `Identifier ${name} already defined`, at);
   }
 
   function mustHaveBeenFound(name, at) {
-    must(context.lookup(name), `Identifier ${name} not declared`, at);
+    must(context.lookup(name), `Identifier ${name} not defined`, at);
+  }
+
+  function mustHaveAValue(name, at) {
+    must(
+      context.lookup(name).value.length,
+      `Identifier ${name} not declared`,
+      at
+    );
   }
 
   function mustHaveNumericType(e, at) {
@@ -121,17 +223,14 @@ export default function analyze(match) {
     }
   }
 
-  function mustBeBooleanOp(name, at) {
+  function mustBeBooleanOp(e, at) {
     const expectedOps = ["==", "!=", "<=", "<", ">=", ">"];
-    must(
-      expectedOps.includes(name),
-      `Operator ${name} not a boolean operator`,
-      at
-    );
+    must(expectedOps.includes(e), `Operator ${e} not a boolean operator`, at);
   }
 
-  function mustOnlyHaveOneOp(e, at) {
-    must(e.length === 1, "Context allows exactly one operator", at);
+  function mustBeStepOp(e, at) {
+    const expectedOps = ["--", "-", "++", "+"];
+    must(expectedOps.includes(e), `Operator ${e} not a step operator`, at);
   }
 
   function mustBothHaveTheSameType(e1, e2, at) {
@@ -218,7 +317,7 @@ export default function analyze(match) {
 
     /* Definitions of the semantic actions */
     ClassDecl(_class, id, block) {
-      mustNotAlreadyBeDeclared(id.sourceString, { at: id });
+      mustNotAlreadyBeDefined(id.sourceString, { at: id });
       const type = core.classType(id.sourceString, null, []);
       context.add(id.sourceString, type);
 
@@ -233,7 +332,7 @@ export default function analyze(match) {
     },
 
     FunctionDecl(_def, id, _left, parameters, _right, _arrow, type, block) {
-      mustNotAlreadyBeDeclared(id.sourceString, { at: id });
+      mustNotAlreadyBeDefined(id.sourceString, { at: id });
       const fun = core.fun(context.class, id.sourceString);
 
       if (context.class) {
@@ -314,7 +413,7 @@ export default function analyze(match) {
     },
 
     VarDecl(modifier, id, _colon, type, _eq, exp) {
-      mustNotAlreadyBeDeclared(id.sourceString, { at: id });
+      mustNotAlreadyBeDefined(id.sourceString, { at: id });
 
       const readonly = modifier.sourceString === "readonly";
       const classAffil = context.class;
@@ -323,10 +422,17 @@ export default function analyze(match) {
       const initializer = exp.rep();
 
       initializer.forEach((child) => {
+        child = context.lookup(child) ? context.lookup(child) : child;
         mustBothHaveTheSameType(typeR, child, { at: exp });
       });
 
-      const variable = core.variable(readonly, classAffil, name, typeR);
+      const variable = core.variable(
+        readonly,
+        classAffil,
+        name,
+        typeR,
+        initializer
+      );
       context.add(id.sourceString, variable);
 
       if (classAffil) {
@@ -352,9 +458,18 @@ export default function analyze(match) {
     // STATEMENTS
     ForLoop(_for, varDecl, _comma1, condition, _comma2, unaryExpr, body) {
       const iterator = varDecl.rep();
+      mustHaveNumericType(iterator.variable, { at: varDecl });
+      mustHaveAValue(iterator.variable.name, { at: varDecl });
+
       const conditionExpr = condition.rep();
       mustBeBooleanOp(conditionExpr.op, { at: condition });
+
       const step = unaryExpr.rep();
+      mustBeStepOp(step.op, { at: unaryExpr });
+
+      mustBeExecutableLoop(iterator, conditionExpr, { at: _for });
+      mustNotBeInfiniteForLoop(iterator, conditionExpr, step, { at: _for });
+
       context = context.newChildContext({ inLoop: true });
       const bodyBlock = body.rep();
       context = context.parent;
@@ -403,7 +518,7 @@ export default function analyze(match) {
 
     Param_regParam(id, _colon, type) {
       const param = core.variable(false, context.class, id, type.rep());
-      mustNotAlreadyBeDeclared(param.name, { at: id });
+      mustNotAlreadyBeDefined(param.name, { at: id });
       context.add(param.name, param);
       return param;
     },
@@ -492,28 +607,21 @@ export default function analyze(match) {
       return core.binary(op, left, right, type);
     },
 
-    Exp5_PrefixExpr(prefixOps, postfixExpr) {
+    Exp5_PrefixExpr(prefixOp, postfixExpr) {
       let expression = context.lookup(postfixExpr.sourceString)
         ? context.lookup(postfixExpr.sourceString)
         : postfixExpr.rep();
-      let ops = [];
-
-      const prefixArray = Array.isArray(prefixOps) ? prefixOps : [prefixOps];
-
-      prefixArray.forEach((opNode) => {
-        ops.push(opNode.sourceString);
-      });
 
       const operand = postfixExpr.rep();
 
-      if (ops.some((op) => op === "++" || op === "--")) {
+      if (prefixOp.sourceString === "++" || prefixOp.sourceString === "--") {
         const type = mustHaveNumericType(expression, { at: postfixExpr });
-        return core.unary(ops, operand, type);
+        return core.unary(prefixOp.sourceString, operand, type);
       }
 
-      if (ops.includes("not")) {
-        const type = mustHaveBooleanType(expression, { at: prefixOps });
-        return core.unary(ops, operand, type);
+      if (prefixOp.sourceString === "not") {
+        const type = mustHaveBooleanType(expression, { at: prefixOp });
+        return core.unary(prefixOp.sourceString, operand, type);
       }
     },
 
