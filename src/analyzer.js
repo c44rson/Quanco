@@ -112,6 +112,13 @@ export default function analyze(match) {
   }
 
   function equivalent(t1, t2) {
+    if (t1.kind === "UnionType") {
+      return equivalent(t1.firstType, t2) || equivalent(t1.secondType, t2);
+    }
+    if (t2.kind === "UnionType") {
+      return equivalent(t1, t2.firstType) || equivalent(t1, t2.secondType);
+    }
+
     const e1 = t1.kind ? t1.type : t1;
     const e2 = t2.kind ? t2.type : t2;
     return e1 === e2;
@@ -535,7 +542,7 @@ export default function analyze(match) {
     },
 
     ParenExpr(_open, exp, _close) {
-      return core.parenExpr(exp.rep());
+      return exp.rep();
     },
 
     identifier(_this, _dot, firstChar, rest) {

@@ -198,7 +198,7 @@ describe("The analyzer", () => {
       analyze(parse("x: num = 1 + 2.2")),
       program([
         variableDeclaration(variable(false, null, "x", numType), [
-          binary("+", 1, 2.2, numType),
+          binary("+", numType, numType, numType),
         ]),
       ])
     );

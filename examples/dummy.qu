@@ -1,4 +1,0 @@
-x: num = 0
-value: num = 1
-here: num = 1
-x.value.here(x, value)
