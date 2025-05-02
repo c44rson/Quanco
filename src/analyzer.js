@@ -95,7 +95,16 @@ export default function analyze(match) {
   }
 
   function mustHaveBooleanType(e, at) {
-    must(e.type === core.booleanType, "Expected a boolean", at);
+    const expectedTypes = [core.booleanType];
+    if (e.kind === "Variable") {
+      let theType = e.type;
+      must(expectedTypes.includes(theType), "Expected a boolean", at);
+      return theType;
+    } else {
+      let theType = e;
+      must(expectedTypes.includes(theType), "Expected a boolean", at);
+      return theType;
+    }
   }
 
   function mustBothHaveTheSameType(e1, e2, at) {
@@ -103,7 +112,7 @@ export default function analyze(match) {
   }
 
   function equivalent(t1, t2) {
-    return t1 == t2 || t1 == t2.type || t1.type == t2;
+    return t1 == t2 || t1 == t2.type || t1.type == t2 || t1.type == t2.type;
   }
 
   function mustBeInAFunction(at) {
@@ -269,9 +278,12 @@ export default function analyze(match) {
       const name = id.sourceString;
       const typeR = type.rep();
       const initializer = exp.rep();
-      mustBothHaveTheSameType(typeR, initializer, { at: initializer });
-      const variable = core.variable(readonly, classAffil, name, typeR);
 
+      initializer.forEach((child) =>
+        mustBothHaveTheSameType(typeR, child, { at: child })
+      );
+
+      const variable = core.variable(readonly, classAffil, name, typeR);
       context.add(id.sourceString, variable);
 
       if (classAffil) {
@@ -422,7 +434,9 @@ export default function analyze(match) {
     },
 
     Exp5_PrefixExpr(prefixOps, postfixExpr) {
-      let expression = context.lookup(postfixExpr.sourceString);
+      let expression = context.lookup(postfixExpr.sourceString)
+        ? context.lookup(postfixExpr.sourceString)
+        : postfixExpr.rep();
       let ops = [];
 
       const prefixArray = Array.isArray(prefixOps) ? prefixOps : [prefixOps];
@@ -432,19 +446,16 @@ export default function analyze(match) {
       });
 
       const operand = postfixExpr.rep();
-      let type;
 
       if (ops.some((op) => op === "++" || op === "--")) {
-        mustHaveNumericType(expression.type, { at: postfixExpr });
-        type = core.numType;
+        const type = mustHaveNumericType(expression, { at: postfixExpr });
+        return core.unary(ops, operand, type);
       }
 
       if (ops.includes("not")) {
-        mustHaveBooleanType(expression.type, { at: postfixExpr });
-        type = core.booleanType;
+        const type = mustHaveBooleanType(expression, { at: prefixOps });
+        return core.unary(ops, operand, type);
       }
-
-      return core.unary(ops, operand, type);
     },
 
     Exp6_PostfixExpr(baseExpr, ops) {
@@ -498,24 +509,19 @@ export default function analyze(match) {
       return core.parenExpr(exp.rep());
     },
 
-    BooleanLit(_) {
-      // split up true and false bools
-      return core.booleanType;
-    },
-
     identifier(_this, _dot, firstChar, rest) {
       const name = firstChar.sourceString + rest.sourceString;
       mustHaveBeenFound(name, { at: firstChar });
       return name;
     },
 
-    none(_) {
-      return core.noneType;
-    },
-
     // VARIABLES AND TYPES
     Type(type) {
       return type.rep();
+    },
+
+    UnionType(left, _bar, right) {
+      return core.unionType(left.rep(), right.rep());
     },
 
     BasicType(basic) {
@@ -529,10 +535,6 @@ export default function analyze(match) {
         case "none":
           return core.noneType;
       }
-    },
-
-    UnionType(left, _bar, right) {
-      return core.unionType(left.rep(), right.rep());
     },
 
     LValue(firstId, _dot, rest) {
@@ -560,6 +562,14 @@ export default function analyze(match) {
 
     string(_openQuote, _chars, _closeQuote) {
       return core.stringType;
+    },
+
+    BooleanLit(_) {
+      return core.booleanType;
+    },
+
+    none(_) {
+      return core.noneType;
     },
   });
   /* One line to run it */

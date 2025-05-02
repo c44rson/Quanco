@@ -42,7 +42,7 @@ Quanco {
   ReturnStmt = return ~alnum                                    --shortReturn
              | return Exp                                       --longReturn
 
-  VarDecl = readonly? identifier ":" Type ("=" Exp)?
+  VarDecl = readonly? identifier ":" Type "="? Exp?
 
   Assignment = LValue ("+=" | "-=" | "=") Exp
 
@@ -61,7 +61,7 @@ Quanco {
   Exp4  = Exp4 ("*" | "/") Exp5				        --MulExpr
 	| Exp5
   
-  Exp5  = (unaryInc | unaryDec | "not") Exp6  		      --PrefixExpr
+  Exp5  = (unaryInc | unaryDec | "not" ) Exp6  		      --PrefixExpr
   	| Exp6
   
   Exp6  = Exp6 (PropertyOp | CallOp)*				--PostfixExpr

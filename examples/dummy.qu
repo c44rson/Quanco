@@ -1,2 +1,2 @@
-x: num = 0
-x += x
+x: bool = true
+y: bool = x or false
