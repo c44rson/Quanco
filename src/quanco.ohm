@@ -86,9 +86,7 @@ Quanco {
 
   BooleanLit = true | false
 
-  ArgList = (NamedArg | Exp) ("," (NamedArg | Exp))*
-
-  NamedArg = identifier "=" Exp
+  ArgList = Exp ("," Exp)*
 
   Type = UnionType
        | BasicType

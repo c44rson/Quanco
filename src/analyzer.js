@@ -492,49 +492,45 @@ export default function analyze(match) {
     },
 
     Exp6_PostfixExpr(baseExpr, ops) {
+      mustHaveBeenFound(baseExpr.sourceString, { at: baseExpr });
       const base = context.lookup(baseExpr.sourceString);
       let result = base;
+      let callee = base;
 
       let operationList = [];
 
-      ops = Array.isArray(ops) ? ops : [];
-
-      ops.forEach((op) => {
-        if (op.kind === "PropertyExpression") {
-          const prop = op.identifier.sourceString;
-          operationList.push(op.sourceString);
-          result = core.propertyExpression(result, prop);
-        } else if (op.kind === "FunctionCall") {
-          const args = op.ArgList ? op.ArgList.rep() : [];
-          operationList.push(op.sourceString);
-          result = core.functionCall(result, args);
+      for (let i = 0; i < ops.children.length; i++) {
+        let op = ops.children[i].rep();
+        if (Array.isArray(op)) {
+          // TODO: check arg count
+          // TODO: check if function
+          operationList.push(core.functionCall(callee, op));
+        } else {
+          mustHaveBeenFound(op, { at: ops });
+          operationList.push(core.propertyExpression(base, op));
+          callee = op;
         }
-      });
+      }
 
       return core.postfixExpression(operationList, base, result.type);
     },
 
     PropertyOp(_dot, id) {
-      const base = this.children[0].rep();
       const prop = id.sourceString;
-      return core.propertyExpression(base, prop);
+      return prop;
     },
 
     CallOp(_open, ArgList, _close) {
-      const callee = this.children[0].rep();
-      const args = ArgList ? ArgList.rep() : [];
-      return core.functionCall(callee, args);
+      let args = ArgList ? ArgList.rep() : [];
+      args = args[0] ? args[0] : args;
+      return args;
     },
 
     ArgList(exp, _comma, exps) {
       const args = [exp.rep()];
-
-      if (exps) {
-        exps.forEach((e) => {
-          args.push(e.rep());
-        });
+      for (let e of exps.children) {
+        args.push(e.rep());
       }
-
       return args;
     },
 
