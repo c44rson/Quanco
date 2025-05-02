@@ -31,7 +31,7 @@ Quanco {
 
   ForLoop = for VarDecl "," Exp "," Exp Block
 
-  WhileLoop = while Exp2 Block
+  WhileLoop = while Exp Block
 
   IfStmt = if Exp Block
            (elif Exp Block)*

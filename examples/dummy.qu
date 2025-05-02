@@ -1,4 +1,3 @@
-x: num = 1
-for c: num = 11, c >= x, --x {
-    d: num
+for i: num = 0, i < 10, ++i {
+    break
 }

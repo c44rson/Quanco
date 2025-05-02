@@ -108,6 +108,10 @@ export default function analyze(match) {
     must(context.inLoop, "Break can only appear in a loop", at);
   }
 
+  function mustBeTheSameEntity(e1, e2, at) {
+    must(e1 === e2, `Entities must match in loop definition`, at);
+  }
+
   function mustNotBeInfiniteForLoop(it, con, step, at) {
     let itL = context.lookup(it.variable.value[0]);
     let itRootValue = itL ? itL.value[0] : it.variable.value[0];
@@ -116,8 +120,6 @@ export default function analyze(match) {
 
     const finalIteratorValue = evaluateIteratively(itRootValue);
     const finalConValue = evaluateIteratively(conRootValue);
-
-    console.log(finalConValue);
 
     let greaterThanOrEqual = finalIteratorValue >= finalConValue;
 
@@ -470,6 +472,13 @@ export default function analyze(match) {
       mustBeExecutableLoop(iterator, conditionExpr, { at: _for });
       mustNotBeInfiniteForLoop(iterator, conditionExpr, step, { at: _for });
 
+      mustBeTheSameEntity(iterator.variable, conditionExpr.left, {
+        at: condition,
+      });
+      mustBeTheSameEntity(iterator.variable, step.operand, {
+        at: unaryExpr,
+      });
+
       context = context.newChildContext({ inLoop: true });
       const bodyBlock = body.rep();
       context = context.parent;
@@ -477,13 +486,16 @@ export default function analyze(match) {
       return core.forStatement(iterator, conditionExpr, step, bodyBlock);
     },
 
-    WhileLoop(_while, exp, block) {
-      const test = exp.rep();
+    WhileLoop(_while, condition, block) {
+      const test = condition.rep();
 
-      mustHaveBooleanType(test, { at: exp });
+      console.log(test);
+
+      mustHaveBooleanType(test, { at: condition });
       context = context.newChildContext({ inLoop: true });
       const body = block.rep();
       context = context.parent;
+
       return core.whileStatement(test, body);
     },
 
@@ -612,7 +624,8 @@ export default function analyze(match) {
         ? context.lookup(postfixExpr.sourceString)
         : postfixExpr.rep();
 
-      const operand = postfixExpr.rep();
+      mustHaveAValue(postfixExpr.rep());
+      const operand = context.lookup(postfixExpr.rep());
 
       if (prefixOp.sourceString === "++" || prefixOp.sourceString === "--") {
         const type = mustHaveNumericType(expression, { at: postfixExpr });
