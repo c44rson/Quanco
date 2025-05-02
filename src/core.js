@@ -89,8 +89,8 @@ export function binary(op, left, right, type) {
   return { kind: "BinaryExpression", op, left, right, type };
 }
 
-export function unary(ops, operand, type) {
-  return { kind: "UnaryExpression", ops, operand, type };
+export function unary(op, operand, type) {
+  return { kind: "UnaryExpression", op, operand, type };
 }
 
 export function postfixExpression(ops, base, type) {

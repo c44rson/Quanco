@@ -70,6 +70,11 @@ export default function analyze(match) {
 
   function mustHaveNumericType(e, at) {
     const expectedTypes = [core.numType];
+
+    if (typeof e === "number") {
+      e = e.type;
+    }
+
     if (e.kind) {
       let theType = e.type;
       must(expectedTypes.includes(theType), "Expected a number", at);
@@ -83,6 +88,11 @@ export default function analyze(match) {
 
   function mustHaveNumericOrStringType(e, at) {
     const expectedTypes = [core.numType, core.stringType];
+
+    if (typeof e === "number") {
+      e = e.type;
+    }
+
     if (e.kind) {
       let theType = e.type;
       must(expectedTypes.includes(theType), "Expected a number or string", at);
@@ -96,7 +106,11 @@ export default function analyze(match) {
 
   function mustHaveBooleanType(e, at) {
     const expectedTypes = [core.booleanType];
-    if (e.kind === "Variable") {
+    if (
+      e.kind === "Variable" ||
+      e.kind === "BinaryExpression" ||
+      typeof e === "boolean"
+    ) {
       let theType = e.type;
       must(expectedTypes.includes(theType), "Expected a boolean", at);
       return theType;
@@ -107,16 +121,36 @@ export default function analyze(match) {
     }
   }
 
+  function mustBeBooleanOp(name, at) {
+    const expectedOps = ["==", "!=", "<=", "<", ">=", ">"];
+    must(
+      expectedOps.includes(name),
+      `Operator ${name} not a boolean operator`,
+      at
+    );
+  }
+
+  function mustOnlyHaveOneOp(e, at) {
+    must(e.length === 1, "Context allows exactly one operator", at);
+  }
+
   function mustBothHaveTheSameType(e1, e2, at) {
     must(equivalent(e1, e2), "Operands do not have the same type", at);
   }
 
   function equivalent(t1, t2) {
+    const types = ["number", "boolean"];
     if (t1.kind === "UnionType") {
       return equivalent(t1.firstType, t2) || equivalent(t1.secondType, t2);
     }
     if (t2.kind === "UnionType") {
       return equivalent(t1, t2.firstType) || equivalent(t1, t2.secondType);
+    }
+    if (types.includes(typeof t1)) {
+      return equivalent(t1.type, t2);
+    }
+    if (types.includes(typeof t2)) {
+      return equivalent(t1, t2.type);
     }
 
     const e1 = t1.kind ? t1.type : t1;
@@ -319,6 +353,7 @@ export default function analyze(match) {
     ForLoop(_for, varDecl, _comma1, condition, _comma2, unaryExpr, body) {
       const iterator = varDecl.rep();
       const conditionExpr = condition.rep();
+      mustBeBooleanOp(conditionExpr.op, { at: condition });
       const step = unaryExpr.rep();
       context = context.newChildContext({ inLoop: true });
       const bodyBlock = body.rep();
@@ -382,9 +417,7 @@ export default function analyze(match) {
     Exp_OrExpr(exp, _ops, exps) {
       const exp1L = context.lookup(exp.sourceString);
       let left = exp1L ? exp1L : exp.rep();
-      if (left.kind) {
-        left = left.type;
-      }
+
       mustHaveBooleanType(left, { at: exp });
       for (let e of exps.children) {
         const exp2L = context.lookup(e.sourceString);
@@ -398,9 +431,7 @@ export default function analyze(match) {
     Exp1_AndExpr(exp, _ops, exps) {
       const exp1L = context.lookup(exp.sourceString);
       let left = exp1L ? exp1L : exp.rep();
-      if (left.kind) {
-        left = left.type;
-      }
+
       mustHaveBooleanType(left, { at: exp });
       for (let e of exps.children) {
         const exp2L = context.lookup(e.sourceString);
@@ -420,10 +451,6 @@ export default function analyze(match) {
         exp2L ? exp2L : exp2.rep(),
       ];
 
-      if (left.kind) {
-        left = left.type;
-      }
-
       if (["<", "<=", ">", ">="].includes(op)) {
         mustHaveNumericOrStringType(left, { at: exp1 });
       }
@@ -439,10 +466,6 @@ export default function analyze(match) {
         addOp.sourceString,
         exp2L ? exp2L : exp2.rep(),
       ];
-
-      if (left.kind) {
-        left = left.type;
-      }
 
       if (op === "+") {
         const type = mustHaveNumericOrStringType(left, { at: exp1 });
@@ -463,10 +486,6 @@ export default function analyze(match) {
         mulOp.sourceString,
         exp2L ? exp2L : exp2.rep(),
       ];
-
-      if (left.kind) {
-        left = left.type;
-      }
 
       const type = mustHaveNumericType(left, { at: exp1 });
       mustBothHaveTheSameType(left, right, { at: mulOp });
@@ -593,7 +612,7 @@ export default function analyze(match) {
     },
 
     number(_whole, _point, _fraction, _e, _digits) {
-      return core.numType;
+      return Number(this.sourceString);
     },
 
     string(_openQuote, _chars, _closeQuote) {
@@ -601,7 +620,7 @@ export default function analyze(match) {
     },
 
     BooleanLit(_) {
-      return core.booleanType;
+      return Boolean(this.sourceString);
     },
 
     none(_) {

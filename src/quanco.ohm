@@ -46,26 +46,26 @@ Quanco {
 
   Assignment = LValue ("+=" | "-=" | "=") Exp
 
-  Exp  	= Exp "or" Exp1					        --OrExpr
+  Exp   = Exp "or" Exp1					        --OrExpr
         | Exp1
   
   Exp1  = Exp1 "and" Exp2				        --AndExpr
-  	| Exp2
+  	  | Exp2
   
-  Exp2  = Exp2 ("==" | "!=" | "<=" | "<" | ">=" | ">") Exp3     --CompareExpr
-  	| Exp3
+  Exp2  = Exp2 ("==" | "!=" | "<=" | "<" | ">=" | ">") Exp3   --CompareExpr
+  	  | Exp3
   
   Exp3  = Exp3 ("+" | "-") Exp4				        --AddExpr
         | Exp4
 
   Exp4  = Exp4 ("*" | "/") Exp5				        --MulExpr
-	| Exp5
+	  | Exp5
   
-  Exp5  = (unaryInc | unaryDec | "not" ) Exp6  		      --PrefixExpr
-  	| Exp6
+  Exp5  = (unaryInc | unaryDec | "not") Exp6  		      --PrefixExpr
+  	  | Exp6
   
   Exp6  = Exp6 (PropertyOp | CallOp)*				--PostfixExpr
-  	| ParenExpr					       
+  	  | ParenExpr					       
         | string
         | identifier
         | number
@@ -79,8 +79,6 @@ Quanco {
 
   string = "\"" (~"\"" any)* "\""
          | "'" (~"'" any)* "'"
-         | "f\"" (~"\"" any)* "\""
-         | "f'" (~"'" any)* "'"
 
   number = digit+ ("." digit+)? (("e" | "E") digit+)?
 
