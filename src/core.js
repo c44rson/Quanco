@@ -19,20 +19,12 @@ export function constructor(params, body, type) {
   return { kind: "Constructor", params, body, type };
 }
 
-export function constructorType(paramTypes) {
-  return { kind: "ConstructorType", paramTypes };
-}
-
 export function functionDeclaration(fun) {
   return { kind: "FunctionDeclaration", fun };
 }
 
 export function fun(classAffil, name, params, body, type) {
   return { kind: "Function", classAffil, name, params, body, type };
-}
-
-export function functionType(paramTypes, returnType) {
-  return { kind: "FunctionType", paramTypes, returnType };
 }
 
 export function variableDeclaration(variable, initializer) {

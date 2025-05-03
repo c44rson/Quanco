@@ -1,5 +1,6 @@
 x: num = 0
-def y() -> str {
-    y: num = 0
-    return "f"
+def y(x: num = 0, y: bool = true) -> num {
+    return x
 }
+
+y(x, false)

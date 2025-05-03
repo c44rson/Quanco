@@ -270,27 +270,14 @@ export default function analyze(match) {
   }
 
   function mustBeReturnable(e, { from: f }, at) {
-    mustBeAssignable(e, { toType: f.type.returnType }, at);
+    mustBeAssignable(e, { toType: f.type }, at);
   }
 
   function mustBeAssignable(e, { toType: type }, at) {
     let source = context.lookup(e) ? context.lookup(e) : e;
     const target = type;
     const message = `Cannot assign a ${source.type} to a ${target}`;
-    must(assignable(source, target), message, at);
-  }
-
-  function assignable(fromType, toType) {
-    return (
-      equivalent(fromType, toType) ||
-      (fromType?.kind === "FunctionType" &&
-        toType?.kind === "FunctionType" &&
-        assignable(fromType.returnType, toType.returnType) &&
-        fromType.paramTypes.length === toType.paramTypes.length &&
-        toType.paramTypes.every((t, i) =>
-          assignable(t, fromType.paramTypes[i])
-        ))
-    );
+    must(equivalent(source, target), message, at);
   }
 
   function isMutable(e) {
@@ -344,22 +331,9 @@ export default function analyze(match) {
         def: fun,
       });
 
-      const paramTypes = parameters.children.map((param) => {
-        const paramName = param.children[0].sourceString;
-        const paramType = param.children[1].rep();
+      fun.params = parameters.children[0].rep();
 
-        const paramTypeObj = core[paramType];
-        return { name: paramName, type: paramTypeObj };
-      });
-
-      fun.params = paramTypes.map((p) => p.name);
-
-      const returnType = type.children?.[0]?.rep() || core.voidType;
-
-      fun.type = core.functionType(
-        paramTypes.map((p) => p.type),
-        returnType
-      );
+      fun.type = type.rep();
 
       fun.body = block.rep();
 
@@ -394,8 +368,14 @@ export default function analyze(match) {
       return params;
     },
 
-    Param_regParam(id, _colon, type) {
-      const param = core.variable(false, context.class, id, type.rep());
+    Param_regParam(id, _colon, type, _eq, value) {
+      const param = core.variable(
+        false,
+        context.class,
+        id.sourceString,
+        type.rep(),
+        value.rep()
+      );
       mustNotAlreadyBeDefined(param.name, { at: id });
       context.add(param.name, param);
       return param;
