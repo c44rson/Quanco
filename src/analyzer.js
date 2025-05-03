@@ -3,7 +3,7 @@ import * as core from "./core.js";
 class Context {
   constructor({
     parent = null,
-    globalClassNamespace = new Map(),
+    global = new Map(),
     locals = new Map(),
     inLoop = false,
     class: c = null,
@@ -11,7 +11,7 @@ class Context {
   }) {
     Object.assign(this, {
       parent,
-      globalClassNamespace,
+      global,
       locals,
       inLoop,
       class: c,
@@ -21,11 +21,22 @@ class Context {
   add(name, entity) {
     this.locals.set(name, entity);
   }
-  assignClassNamespace(id, entity) {
-    this.globalClassNamespace.set(id, entity);
+  assignCategory(id, entity) {
+    this.global.set(id, entity);
+  }
+  assignAttribute(category, attr) {
+    this.global.get(category).attributes.set(attr.name, attr);
+  }
+  assignMethod(category, method) {
+    this.global.get(category).methods.set(method.name, method);
   }
   lookup(name) {
-    return this.locals.get(name) || this.globalClassNamespace.get(name);
+    return (
+      this.locals.get(name) ||
+      this.global.get(name) ||
+      this.class?.attributes.get(name) ||
+      this.class?.methods.get(name)
+    );
   }
   static root() {
     return new Context({
@@ -33,7 +44,7 @@ class Context {
     });
   }
   newChildContext(props) {
-    return new Context({ ...this, ...props, parent: this, locals: new Map() });
+    return new Context({ ...this, ...props, parent: this });
   }
 }
 
@@ -157,7 +168,9 @@ export default function analyze(match) {
   }
 
   function mustHaveBeenFound(name, at) {
-    must(context.lookup(name), `Identifier ${name} not defined`, at);
+    let found = context.lookup(name) || context.class?.attributes.get(name);
+
+    must(found, `Identifier ${name} not defined`, at);
   }
 
   function mustHaveAValue(name, at) {
@@ -259,13 +272,52 @@ export default function analyze(match) {
     must(context.function, "Return can only appear in a function", at);
   }
 
+  function mustBeInAClass(at) {
+    must(context.class, "__init__ can only be used in a class", at);
+  }
+
+  function mustBeCompatibleArguments(args, params, at) {
+    mustHaveTheCorrectNumberOfArguments(args, params, at);
+    mustHaveMatchingParamsAndArguments(args, params, at);
+  }
+
+  function mustHaveTheCorrectNumberOfArguments(args, params, at) {
+    must(
+      args.length === params.length,
+      `${params.length} arguments expected, ${args.length} given`,
+      at
+    );
+  }
+
+  function mustHaveMatchingParamsAndArguments(args, params, at) {
+    let compatible = true;
+    let arg;
+    let p;
+    params?.forEach((param, idx) => {
+      let argument = context.lookup(args[idx])
+        ? context.lookup(args[idx])
+        : args[idx];
+
+      if (param.type !== argument.type) {
+        compatible = false;
+        arg = args[idx];
+        p = param.name;
+      }
+    });
+    must(
+      compatible,
+      `Argument ${arg} is not compatible with parameter ${p}`,
+      at
+    );
+  }
+
   function mustReturnSomething(f, at) {
-    const returnsSomething = f.type.returnType !== core.voidType;
+    const returnsSomething = f.type !== core.voidType;
     must(returnsSomething, "Cannot return a value from this function", at);
   }
 
   function mustHaveReturn(f, at) {
-    const returnsSomething = f.type.returnType !== core.voidType;
+    const returnsSomething = f.type !== core.voidType;
     must(!returnsSomething, "This function requires a return value", at);
   }
 
@@ -298,40 +350,46 @@ export default function analyze(match) {
     },
 
     Block(_open, statements, _close) {
-      // No need for a block node, just return the list of statements
       return statements.children.map((s) => s.rep());
     },
 
     /* Definitions of the semantic actions */
     ClassDecl(_class, id, block) {
       mustNotAlreadyBeDefined(id.sourceString, { at: id });
-      const type = core.classType(id.sourceString, null, []);
-      context.add(id.sourceString, type);
+      const category = core.category(id.sourceString, new Map(), new Map(), []);
 
-      // Create new child context (recursion)
-      context = context.newChildContext({ inLoop: false, class: type });
+      context.add(id.sourceString, category);
+      context.assignCategory(id.sourceString, category);
 
-      type.body = block.rep();
+      context = context.newChildContext({
+        locals: new Map(Object.entries(core.standardLibrary)),
+        inLoop: false,
+        class: category,
+      });
+
+      category.body = block.rep();
 
       context = context.parent;
 
-      return core.classDeclaration(type);
+      return core.classDeclaration(category);
     },
 
     FunctionDecl(_def, id, _left, parameters, _right, _arrow, type, block) {
       mustNotAlreadyBeDefined(id.sourceString, { at: id });
-      const fun = core.fun(context.class, id.sourceString);
+      const fun = core.fun(id.sourceString);
 
       if (context.class) {
-        context.assignClassNamespace(id, fun);
+        context.assignMethod(context.class.name, fun);
       }
+
       context.add(id.sourceString, fun);
       context = context.newChildContext({
+        locals: new Map(Object.entries(core.standardLibrary)),
         inLoop: false,
         def: fun,
       });
 
-      fun.params = parameters.children[0].rep();
+      fun.params = parameters.children[0]?.rep();
 
       fun.type = type.rep();
 
@@ -343,24 +401,12 @@ export default function analyze(match) {
     },
 
     ConstructorDecl(_def, __init__, _left, parameters, _right, block) {
-      const constructor = core.constructor(context.class, "init");
-      context.assignClassNamespace("init", constructor);
+      mustBeInAClass({ at: __init__ });
 
-      context = context.newChildContext({
-        inLoop: false,
-        def: constructor,
-      });
-      constructor.params = parameters.rep();
+      context.class.params = parameters.rep();
+      console.log(context.class.params);
 
-      const paramTypes = constructor.params.map((param) => param.type);
-
-      constructor.body = block.rep();
-
-      constructor.type = core.constructorType(paramTypes);
-
-      context = context.parent;
-      context.class.constructor = constructor;
-      return core.constructorDeclaration(constructor);
+      context.class.body = block.rep();
     },
 
     Params(param, _comma, paramList) {
@@ -371,7 +417,6 @@ export default function analyze(match) {
     Param_regParam(id, _colon, type, _eq, value) {
       const param = core.variable(
         false,
-        context.class,
         id.sourceString,
         type.rep(),
         value.rep()
@@ -411,7 +456,6 @@ export default function analyze(match) {
       mustNotAlreadyBeDefined(id.sourceString, { at: id });
 
       const readonly = modifier.sourceString === "readonly";
-      const classAffil = context.class;
       const name = id.sourceString;
       const typeR = type.rep();
       const initializer = exp.rep();
@@ -421,17 +465,10 @@ export default function analyze(match) {
         mustBothHaveTheSameType(typeR, child, { at: exp });
       });
 
-      const variable = core.variable(
-        readonly,
-        classAffil,
-        name,
-        typeR,
-        initializer
-      );
+      const variable = core.variable(readonly, name, typeR, initializer);
       context.add(id.sourceString, variable);
-
-      if (classAffil) {
-        context.assignClassNamespace(name, variable);
+      if (context.class) {
+        context.assignAttribute(context.class.name, variable);
       }
 
       return core.variableDeclaration(variable, initializer);
@@ -439,12 +476,10 @@ export default function analyze(match) {
 
     Assignment(lval, _eq, expr) {
       mustHaveBeenFound(lval.sourceString, { at: lval });
-
       const sourceL = context.lookup(expr.sourceString);
 
       const target = context.lookup(lval.sourceString);
       const source = sourceL ? sourceL : expr.rep();
-
       mustBothHaveTheSameType(target.type, source, { at: expr });
       mustBeMutable(target, { at: lval });
       return core.assignment(target, source);
@@ -453,6 +488,7 @@ export default function analyze(match) {
     // STATEMENTS
     ForLoop(_for, varDecl, _comma1, condition, _comma2, unaryExpr, body) {
       const iterator = varDecl.rep();
+
       mustHaveNumericType(iterator.variable, { at: varDecl });
       mustHaveAValue(iterator.variable.name, { at: varDecl });
 
@@ -472,7 +508,9 @@ export default function analyze(match) {
         at: unaryExpr,
       });
 
-      context = context.newChildContext({ inLoop: true });
+      context = context.newChildContext({
+        inLoop: true,
+      });
       const bodyBlock = body.rep();
       context = context.parent;
 
@@ -483,7 +521,10 @@ export default function analyze(match) {
       const test = condition.rep();
 
       mustHaveBooleanType(test, { at: condition });
-      context = context.newChildContext({ inLoop: true });
+
+      context = context.newChildContext({
+        inLoop: true,
+      });
       const body = block.rep();
       context = context.parent;
 
@@ -637,8 +678,7 @@ export default function analyze(match) {
       for (let i = 0; i < ops.children.length; i++) {
         let op = ops.children[i].rep();
         if (Array.isArray(op)) {
-          // TODO: check arg count
-          // TODO: check if function
+          mustBeCompatibleArguments(op, callee.params, { at: ops });
           operationList.push(core.functionCall(callee, op));
         } else {
           mustHaveBeenFound(op, { at: ops });
@@ -674,7 +714,12 @@ export default function analyze(match) {
     },
 
     identifier(_this, _dot, firstChar, rest) {
-      const name = firstChar.sourceString + rest.sourceString;
+      let name;
+      if (_this.sourceString) {
+        name = _this.sourceString + firstChar.sourceString + rest.sourceString;
+      } else {
+        name = firstChar.sourceString + rest.sourceString;
+      }
       mustHaveBeenFound(name, { at: firstChar });
       return name;
     },
@@ -729,7 +774,11 @@ export default function analyze(match) {
     },
 
     BooleanLit(_) {
-      return Boolean(this.sourceString);
+      if (this.sourceString === "false") {
+        return false;
+      } else {
+        return true;
+      }
     },
 
     none(_) {

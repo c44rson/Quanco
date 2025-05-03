@@ -3,36 +3,28 @@ export function program(statements) {
   return { kind: "Program", statements };
 }
 
-export function classDeclaration(type) {
-  return { kind: "ClassDeclaration", type };
+export function classDeclaration(category) {
+  return { kind: "ClassDeclaration", category };
 }
 
-export function classType(name, constructor, body) {
-  return { kind: "ClassType", name, constructor, body };
-}
-
-export function constructorDeclaration(constructor) {
-  return { kind: "ConstructorDeclaration", constructor };
-}
-
-export function constructor(params, body, type) {
-  return { kind: "Constructor", params, body, type };
+export function category(name, methods, attributes, params, body) {
+  return { kind: "Category", name, methods, attributes, params, body };
 }
 
 export function functionDeclaration(fun) {
   return { kind: "FunctionDeclaration", fun };
 }
 
-export function fun(classAffil, name, params, body, type) {
-  return { kind: "Function", classAffil, name, params, body, type };
+export function fun(name, params, body, type) {
+  return { kind: "Function", name, params, body, type };
 }
 
 export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
 }
 
-export function variable(readonly, classAffil, name, type, value) {
-  return { kind: "Variable", readonly, classAffil, name, type, value };
+export function variable(readonly, name, type, value) {
+  return { kind: "Variable", readonly, name, type, value };
 }
 
 export function assignment(target, source) {

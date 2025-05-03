@@ -1,6 +1,8 @@
-x: num = 0
-def y(x: num = 0, y: bool = true) -> num {
-    return x
+class d {
+    def __init__(self, x: bool) {
+        this.valid: bool = x
+    }
+    def flipValid(self) -> void {
+        this.valid = not this.valid
+    }
 }
-
-y(x, false)

@@ -42,7 +42,7 @@ Quanco {
   ReturnStmt = return Exp                                       --longReturn
              | return ~alnum                                    --shortReturn
 
-  VarDecl = readonly? identifier ":" Type "="? Exp?
+  VarDecl = readonly? identifier ":" Type ("=" Exp)?
 
   Assignment = LValue ("+=" | "-=" | "=") Exp
 
