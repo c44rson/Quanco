@@ -1,3 +1,5 @@
-for i: num = 0, i < 10, ++i {
-    break
+x: num = 0
+def y() -> str {
+    y: num = 0
+    return "f"
 }

@@ -68,6 +68,10 @@ export function ifStatement(test, consequent, alternates, final) {
   return { kind: "IfStatement", test, consequent, alternates, final };
 }
 
+export function elifStatement(condition, body) {
+  return { kind: "ElifStatement", condition, body };
+}
+
 export function returnStatement(expression) {
   return { kind: "ReturnStatement", expression };
 }

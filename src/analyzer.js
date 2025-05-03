@@ -25,11 +25,7 @@ class Context {
     this.globalClassNamespace.set(id, entity);
   }
   lookup(name) {
-    return (
-      this.locals.get(name) ||
-      this.globalClassNamespace.get(name) ||
-      this.parent?.lookup(name)
-    );
+    return this.locals.get(name) || this.globalClassNamespace.get(name);
   }
   static root() {
     return new Context({
@@ -268,27 +264,29 @@ export default function analyze(match) {
     must(returnsSomething, "Cannot return a value from this function", at);
   }
 
+  function mustHaveReturn(f, at) {
+    const returnsSomething = f.type.returnType !== core.voidType;
+    must(!returnsSomething, "This function requires a return value", at);
+  }
+
   function mustBeReturnable(e, { from: f }, at) {
     mustBeAssignable(e, { toType: f.type.returnType }, at);
   }
 
   function mustBeAssignable(e, { toType: type }, at) {
-    const source = e.type;
+    let source = context.lookup(e) ? context.lookup(e) : e;
     const target = type;
-    const message = `Cannot assign a ${source} to a ${target}`;
-    must(assignable(e.type, type), message, at);
+    const message = `Cannot assign a ${source.type} to a ${target}`;
+    must(assignable(source, target), message, at);
   }
 
   function assignable(fromType, toType) {
     return (
-      toType == core.anyType ||
       equivalent(fromType, toType) ||
       (fromType?.kind === "FunctionType" &&
         toType?.kind === "FunctionType" &&
-        // covariant in return types
         assignable(fromType.returnType, toType.returnType) &&
         fromType.paramTypes.length === toType.paramTypes.length &&
-        // contravariant in parameter types
         toType.paramTypes.every((t, i) =>
           assignable(t, fromType.paramTypes[i])
         ))
@@ -341,8 +339,10 @@ export default function analyze(match) {
         context.assignClassNamespace(id, fun);
       }
       context.add(id.sourceString, fun);
-
-      context = context.newChildContext({ inLoop: false, def: fun });
+      context = context.newChildContext({
+        inLoop: false,
+        def: fun,
+      });
 
       const paramTypes = parameters.children.map((param) => {
         const paramName = param.children[0].sourceString;
@@ -389,6 +389,18 @@ export default function analyze(match) {
       return core.constructorDeclaration(constructor);
     },
 
+    Params(param, _comma, paramList) {
+      const params = [param.rep(), ...paramList.children.map((p) => p.rep())];
+      return params;
+    },
+
+    Param_regParam(id, _colon, type) {
+      const param = core.variable(false, context.class, id, type.rep());
+      mustNotAlreadyBeDefined(param.name, { at: id });
+      context.add(param.name, param);
+      return param;
+    },
+
     ReturnType(type) {
       if (type.sourceString === "void") {
         return core.voidType;
@@ -411,6 +423,7 @@ export default function analyze(match) {
 
     ReturnStmt_shortReturn(_return) {
       mustBeInAFunction({ at: _return });
+      mustHaveReturn(context.function, { at: _return });
       return core.shortReturnStatement;
     },
 
@@ -489,8 +502,6 @@ export default function analyze(match) {
     WhileLoop(_while, condition, block) {
       const test = condition.rep();
 
-      console.log(test);
-
       mustHaveBooleanType(test, { at: condition });
       context = context.newChildContext({ inLoop: true });
       const body = block.rep();
@@ -512,27 +523,24 @@ export default function analyze(match) {
       const test = condition.rep();
       const consequentBlock = consequent.rep();
 
+      mustHaveBooleanType(test, { at: condition });
+
       const alternates = elif_conditions.children.map((e, idx) => {
         const elifCondition = e.rep();
+        mustHaveBooleanType(elifCondition, { at: e });
+
         const elifBlock = elif_blocks.children[idx].rep();
-        return { condition: elifCondition, block: elifBlock };
+        return core.elifStatement(elifCondition, elifBlock);
       });
 
-      const finalBlock = final ? final.rep() : null;
+      const finalBlock = _else ? final.rep() : [];
 
-      return core.ifStatement(test, consequentBlock, alternates, finalBlock);
-    },
-
-    Params(param, _comma, paramList) {
-      const params = [param.rep(), ...paramList.children.map((p) => p.rep())];
-      return params;
-    },
-
-    Param_regParam(id, _colon, type) {
-      const param = core.variable(false, context.class, id, type.rep());
-      mustNotAlreadyBeDefined(param.name, { at: id });
-      context.add(param.name, param);
-      return param;
+      return core.ifStatement(
+        test,
+        consequentBlock,
+        alternates,
+        finalBlock ? finalBlock[0] : finalBlock
+      );
     },
 
     BreakStmt(breakKeyword) {
