@@ -1,4 +1,5 @@
 class d {
+    this.pure: num = 0
     def __init__(self, x: bool) {
         this.valid: bool = x
     }
@@ -6,3 +7,5 @@ class d {
         this.valid = not this.valid
     }
 }
+example: d = d(true)
+variable: bool = d.valid

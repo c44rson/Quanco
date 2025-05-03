@@ -168,7 +168,10 @@ export default function analyze(match) {
   }
 
   function mustHaveBeenFound(name, at) {
-    let found = context.lookup(name) || context.class?.attributes.get(name);
+    let found =
+      context.lookup(name) ||
+      context.class?.attributes.get(name) ||
+      context.class?.methods.get(name);
 
     must(found, `Identifier ${name} not defined`, at);
   }
@@ -356,7 +359,7 @@ export default function analyze(match) {
     /* Definitions of the semantic actions */
     ClassDecl(_class, id, block) {
       mustNotAlreadyBeDefined(id.sourceString, { at: id });
-      const category = core.category(id.sourceString, new Map(), new Map(), []);
+      const category = core.category(id.sourceString, new Map(), new Map());
 
       context.add(id.sourceString, category);
       context.assignCategory(id.sourceString, category);
@@ -403,10 +406,12 @@ export default function analyze(match) {
     ConstructorDecl(_def, __init__, _left, parameters, _right, block) {
       mustBeInAClass({ at: __init__ });
 
-      context.class.params = parameters.rep();
-      console.log(context.class.params);
+      const fun = core.fun(__init__.sourceString);
+      fun.type = core.noneType;
 
-      context.class.body = block.rep();
+      context.class.params = parameters.children[0]?.rep();
+
+      fun.body = block.rep();
     },
 
     Params(param, _comma, paramList) {
@@ -424,6 +429,10 @@ export default function analyze(match) {
       mustNotAlreadyBeDefined(param.name, { at: id });
       context.add(param.name, param);
       return param;
+    },
+
+    Param_self(self) {
+      return "self";
     },
 
     ReturnType(type) {
@@ -675,19 +684,40 @@ export default function analyze(match) {
 
       let operationList = [];
 
-      for (let i = 0; i < ops.children.length; i++) {
-        let op = ops.children[i].rep();
-        if (Array.isArray(op)) {
-          mustBeCompatibleArguments(op, callee.params, { at: ops });
-          operationList.push(core.functionCall(callee, op));
-        } else {
-          mustHaveBeenFound(op, { at: ops });
-          operationList.push(core.propertyExpression(base, op));
-          callee = op;
-        }
-      }
+      if (base.kind === "Category") {
+        for (let i = 0; i < ops.children.length; i++) {
+          let op = ops.children[i].rep();
+          if (Array.isArray(op)) {
+            op.unshift("self");
 
-      return core.postfixExpression(operationList, base, result.type);
+            mustBeCompatibleArguments(op, callee.params, { at: ops });
+
+            op.shift();
+            operationList.push(core.constructorCall(base, op));
+            return core.postfixExpression(operationList, base, base.name);
+          } else {
+            op = base.attributes.get("this." + op)
+              ? base.attributes.get("this." + op)
+              : base.methods.get(op);
+            console.log(op);
+            operationList.push(core.propertyExpression(base, op));
+            return core.postfixExpression(operationList, base, op.type);
+          }
+        }
+      } else {
+        for (let i = 0; i < ops.children.length; i++) {
+          let op = ops.children[i].rep();
+          if (Array.isArray(op)) {
+            mustBeCompatibleArguments(op, callee.params, { at: ops });
+            operationList.push(core.functionCall(callee, op));
+          } else {
+            mustHaveBeenFound(op, { at: ops });
+            operationList.push(core.propertyExpression(base, op));
+            callee = op;
+          }
+        }
+        return core.postfixExpression(operationList, base, result.type);
+      }
     },
 
     PropertyOp(_dot, id) {
@@ -759,10 +789,6 @@ export default function analyze(match) {
 
     _iter(...children) {
       return children.map((child) => child.rep());
-    },
-
-    _terminal() {
-      return this.sourceString;
     },
 
     number(_neg, _whole, _point, _fraction, _e, _digits) {

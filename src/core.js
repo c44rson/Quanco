@@ -37,7 +37,7 @@ export function functionCall(callee, args) {
 }
 
 export function constructorCall(callee, args) {
-  return { kind: "ConstructorCall", callee, args, type: callee };
+  return { kind: "ConstructorCall", callee, args };
 }
 
 export function forStatement(iterator, condition, step, body) {
@@ -65,10 +65,6 @@ export const shortReturnStatement = { kind: "ShortReturnStatement" };
 export const breakStatement = { kind: "BreakStatement" };
 
 // EXPRESSIONS
-export function parenExpr(exp) {
-  return { kind: "ParenthesizedExpression", exp };
-}
-
 export function propertyExpression(base, prop) {
   return { kind: "PropertyExpression", base, prop };
 }

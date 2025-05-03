@@ -23,7 +23,7 @@ Quanco {
 
   Params = Param ("," Param)*
   Param = ~self identifier ":" Type ("=" Exp)? -- regParam
-        | self
+        | self                                 -- self
 
   ReturnType = (Type | void)
 

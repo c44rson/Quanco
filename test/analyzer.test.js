@@ -19,10 +19,13 @@ const semanticChecks = [
   [
     "variable assignments",
     `readonly y: num = 0
-     z: str = "0"
-     a: bool = true
-     b: num = 0.0 - 1
-     c: none = none`,
+     z: str | none = "0"
+     a: bool = false
+     b: num = (0.0 - 1)
+     c: none = none
+     c = none
+     a = true
+     `,
   ],
   [
     "function without parameters",
@@ -40,7 +43,9 @@ const semanticChecks = [
     "void function",
     `def f(x: bool) -> void {
         return
-     }`,
+     }
+     f(true)
+     `,
   ],
   [
     "non-void function",
@@ -99,6 +104,8 @@ const semanticChecks = [
     `j: num = 0
       while j <= 20 {
         if j == 10 {
+          break
+        } elif j == 0 {
           break
         }
         j += 2
@@ -197,9 +204,10 @@ describe("The analyzer", () => {
     assert.deepEqual(
       analyze(parse("x: num = 1 + 2.2")),
       program([
-        variableDeclaration(variable(false, null, "x", numType), [
-          binary("+", numType, numType, numType),
-        ]),
+        variableDeclaration(
+          variable(false, "x", numType, [binary("+", 1, 2.2, numType)]),
+          [binary("+", 1, 2.2, numType)]
+        ),
       ])
     );
   });
