@@ -118,8 +118,7 @@ export default function analyze(match) {
   function mustNotBeInfiniteForLoop(it, con, step, at) {
     let itL = context.lookup(it.variable.value[0]);
     let itRootValue = itL ? itL.value[0] : it.variable.value[0];
-    let conL = context.lookup(con.right);
-    let conRootValue = conL ? conL.value[0] : con.right;
+    let conRootValue = con.right;
 
     const finalIteratorValue = evaluateIteratively(itRootValue);
     const finalConValue = evaluateIteratively(conRootValue);
@@ -132,30 +131,40 @@ export default function analyze(match) {
     let posStepOp = positiveStepOperators.includes(step.op);
     let posConOp = positiveConOperators.includes(con.op);
 
-    let infinite =
-      (greaterThanOrEqual && posStepOp && posConOp) ||
-      (!greaterThanOrEqual && !posStepOp && !posConOp);
+    let infinite = greaterThanOrEqual && posStepOp && posConOp;
     must(!infinite, `Infinite loop detected`, at);
   }
 
   function mustBeExecutableLoop(it, con, at) {
     let itL = context.lookup(it.variable.value[0]);
     let itRootValue = itL ? itL.value[0] : it.variable.value[0];
-    let conL = context.lookup(con.right);
-    let conRootValue = conL ? conL.value[0] : con.right;
+    let conRootValue = con.right;
 
     const finalIteratorValue = evaluateIteratively(itRootValue);
     const finalConValue = evaluateIteratively(conRootValue);
 
-    let greaterThan = finalIteratorValue > finalConValue;
-    let equal = finalIteratorValue === finalConValue;
+    let overlap = false;
 
-    let overlap =
-      equal && (con.op === "==" || con.op === ">=" || con.op || "<=")
-        ? true
-        : greaterThan && (con.op == ">" || con.op == ">=")
-        ? true
-        : !greaterThan && (con.op == "<" || con.op == "<=" ? true : false);
+    switch (con.op) {
+      case "==":
+        overlap = finalIteratorValue === finalConValue;
+        break;
+      case "!=":
+        overlap = finalIteratorValue !== finalConValue;
+        break;
+      case ">":
+        overlap = finalIteratorValue > finalConValue;
+        break;
+      case ">=":
+        overlap = finalIteratorValue >= finalConValue;
+        break;
+      case "<":
+        overlap = finalIteratorValue < finalConValue;
+        break;
+      case "<=":
+        overlap = finalIteratorValue <= finalConValue;
+        break;
+    }
     must(overlap, `Loop never executes`, at);
   }
 
@@ -173,7 +182,7 @@ export default function analyze(match) {
 
   function mustHaveAValue(name, at) {
     must(
-      context.lookup(name).value.length,
+      context.lookup(name)?.value.length,
       `Identifier ${name} not declared`,
       at
     );
@@ -593,14 +602,9 @@ export default function analyze(match) {
         return core.elifStatement(elifCondition, elifBlock);
       });
 
-      const finalBlock = _else ? final.rep() : [];
+      const finalBlock = final.rep();
 
-      return core.ifStatement(
-        test,
-        consequentBlock,
-        alternates,
-        finalBlock ? finalBlock[0] : finalBlock
-      );
+      return core.ifStatement(test, consequentBlock, alternates, finalBlock[0]);
     },
 
     BreakStmt(breakKeyword) {
@@ -688,11 +692,9 @@ export default function analyze(match) {
     },
 
     Exp5_PrefixExpr(prefixOp, postfixExpr) {
-      let expression = context.lookup(postfixExpr.sourceString)
-        ? context.lookup(postfixExpr.sourceString)
-        : postfixExpr.rep();
+      let expression = context.lookup(postfixExpr.sourceString);
 
-      mustHaveAValue(postfixExpr.rep());
+      mustHaveAValue(postfixExpr.rep(), { at: postfixExpr });
       const operand = context.lookup(postfixExpr.rep());
 
       if (prefixOp.sourceString === "++" || prefixOp.sourceString === "--") {
@@ -725,9 +727,26 @@ export default function analyze(match) {
             op.shift();
             operationList.push(core.constructorCall(base, op));
           } else {
+            if (context.class === null) {
+              let globalClass = context.lookup(base.name);
+              context.class = globalClass;
+
+              let name = context.lookup(op) ? op : "this." + op;
+              if (op && context.lookup(op)) {
+                name = op;
+              } else if (op && !context.lookup(op)) {
+                name = "this." + op;
+              } else {
+                name = base.name;
+              }
+
+              mustHaveBeenFound(name, { at: ops });
+              context.class = null;
+            }
             op = base.attributes.get("this." + op)
               ? base.attributes.get("this." + op)
               : base.methods.get(op);
+            op = op ? op : base.name;
             operationList.push(core.propertyExpression(base, op));
             callee = op;
           }
@@ -755,8 +774,8 @@ export default function analyze(match) {
     },
 
     CallOp(_open, ArgList, _close) {
-      let args = ArgList ? ArgList.rep() : [];
-      args = args[0] ? args[0] : args;
+      let args = ArgList.rep();
+      args = args[0];
       return args;
     },
 

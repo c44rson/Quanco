@@ -20,12 +20,31 @@ const semanticChecks = [
     "arithmetic",
     `x: num = 1 / 1 * 1 / 1 * 1
      y: num = 1 / 2 * -1
+     z: num = x * y - x + y
+     a: bool = true or false
+     b: bool = true
+     c: bool = a or b and a
+     d: bool = x <= 1
+     e: bool = 1 <= x
+     f: none | bool = true or false or d
      `,
+  ],
+  [
+    "if",
+    `if 1 == 1 {
+      x: num = 1
+     } elif 1 == 2 {
+      y: num = 2
+     } elif 1 == 3 {
+      z: num = 2
+     }
+    `,
   ],
   [
     "variable assignments",
     `readonly y: num = 0
      z: str | none = "0"
+     w: none | str = "0"
      a: bool = false or true and true
      b: num = (0.0 - 1 * 5)
      c: none = none
@@ -33,13 +52,16 @@ const semanticChecks = [
      a = true
      b += 1
      x: str = z
+     q: str = w
      `,
   ],
   [
     "function without parameters",
     `def f() -> str {
         return "true"
-     }`,
+     }
+     x: str = f()
+     `,
   ],
   [
     "function with parameters",
@@ -67,7 +89,11 @@ const semanticChecks = [
     "class without constructor",
     `class c {
         this.x: num = 1
-     }`,
+     }
+     d: c = c()
+     f: c
+     f = c()
+     `,
   ],
   [
     "class with constructor",
@@ -103,13 +129,30 @@ const semanticChecks = [
         }
      }
      example: d = d(true)
-     variable: bool = d.valid`,
+     variable: bool = d.valid
+     d.flipValid()
+     `,
   ],
   [
     "breaking for loop",
-    `for i: num = 0, i < 5, ++i {
+    `x: num = 0
+     y: num = 5
+     for i: num = x, i < y + 4 + 4, ++i {
         if i == 2 {
             break
+        } else {
+          break
+        }
+     }`,
+  ],
+  [
+    "equal for loop",
+    `
+     for i: num = 2, i == 2, ++i {
+        for j: num = 2, j >= 2, --j {
+          for k: num = 2, k <= 2, ++k {
+            a: num = 0
+          }
         }
      }`,
   ],
@@ -120,6 +163,8 @@ const semanticChecks = [
         if j == 10 {
           break
         } elif j == 0 {
+          break
+        } else {
           break
         }
         j += 2
@@ -149,6 +194,12 @@ const semanticErrors = [
      x++`,
   ],
   [
+    "bad for loop !=",
+    `for l: num = 2, l != 2, ++l {
+        a: num = 0
+      }`,
+  ],
+  [
     "class field scope",
     `class x { this.x: int = 0 }
      this.x += 1`,
@@ -162,11 +213,22 @@ const semanticErrors = [
      }`,
   ],
   [
-    "bad for loop infinite",
+    "bad for loop infinite neg",
     `
     x: num = 1 + 1
     
     for i: num = x - 10 - 2 + 1 * 1 / 1, i < 5, --i {
+        if i == 2 {
+            break
+        }
+     }`,
+  ],
+  [
+    "bad for loop infinite pos",
+    `
+    x: num = 1 + 1
+    
+    for i: num = 1, i > 0, ++i {
         if i == 2 {
             break
         }
@@ -179,13 +241,21 @@ const semanticErrors = [
      }
      x += 2`,
   ],
+  [
+    "incorrect function call",
+    `def f() -> str {
+        return "true"
+    }
+    x: str = f("0")`,
+  ],
   ["break outside function", `break`],
   ["return outside function", `return`],
   [
     "returning value in void function",
     `def f() -> void {
         return true
-     }`,
+     }
+     f()`,
   ],
   ["Type Mismatch: assignment", `y: bool = 0 and 0`],
   [

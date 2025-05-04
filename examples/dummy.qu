@@ -1,9 +1,11 @@
 class d {
-    this.pure: num = 0
     def __init__(self, x: bool) {
         this.valid: bool = x
     }
+    def flipValid(self) -> void {
+        this.valid = not this.valid
+    }
 }
-x: d = d(true)
-x = d(false)
-x.pure = 1
+example: d = d(true)
+variable: bool = d.valid
+d.flipValid2()
