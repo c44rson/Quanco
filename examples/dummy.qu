@@ -3,9 +3,7 @@ class d {
     def __init__(self, x: bool) {
         this.valid: bool = x
     }
-    def flipValid(self) -> void {
-        this.valid = not this.valid
-    }
 }
-example: d = d(true)
-variable: bool = d.valid
+x: d = d(true)
+x = d(false)
+x.pure = 1

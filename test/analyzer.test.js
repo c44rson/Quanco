@@ -17,27 +17,37 @@ const semanticChecks = [
      y: str`,
   ],
   [
+    "arithmetic",
+    `x: num = 1 / 1 * 1 / 1 * 1
+     y: num = 1 / 2 * -1
+     `,
+  ],
+  [
     "variable assignments",
     `readonly y: num = 0
      z: str | none = "0"
-     a: bool = false
-     b: num = (0.0 - 1)
+     a: bool = false or true and true
+     b: num = (0.0 - 1 * 5)
      c: none = none
      c = none
      a = true
+     b += 1
+     x: str = z
      `,
   ],
   [
     "function without parameters",
-    `def f() -> void {
-        return
+    `def f() -> str {
+        return "true"
      }`,
   ],
   [
     "function with parameters",
     `def f(x: num, y: bool) -> bool {
         return true
-    }`,
+    }
+    f(0, true)
+    `,
   ],
   [
     "void function",
@@ -62,10 +72,14 @@ const semanticChecks = [
   [
     "class with constructor",
     `class d {
-        def __init__(self, x: bool) {
-            this.valid: bool = x
+      this.pure: num = 0
+      def __init__(self, x: bool) {
+          this.valid: bool = x
         }
-     }`,
+      }
+      x: d = d(true)
+      x = d(false)
+    x.pure = 1`,
   ],
   [
     "class with method",
@@ -140,6 +154,25 @@ const semanticErrors = [
      this.x += 1`,
   ],
   [
+    "bad for loop outside bounds",
+    `for i: num = 6, i < 5, ++i {
+        if i == 2 {
+            break
+        }
+     }`,
+  ],
+  [
+    "bad for loop infinite",
+    `
+    x: num = 1 + 1
+    
+    for i: num = x - 10 - 2 + 1 * 1 / 1, i < 5, --i {
+        if i == 2 {
+            break
+        }
+     }`,
+  ],
+  [
     "function variable scope",
     `def x() -> void {
         x: int = 0
@@ -154,11 +187,7 @@ const semanticErrors = [
         return true
      }`,
   ],
-  [
-    "Type Mismatch: int only operator",
-    `x: float = 1.0
-     x++`,
-  ],
+  ["Type Mismatch: assignment", `y: bool = 0 and 0`],
   [
     "Type Mismatch: bool only operator",
     `x: str = "done"
@@ -182,9 +211,16 @@ const semanticErrors = [
      f("baby")`,
   ],
   [
+    "Type Mismatch: argument vs. parameter in function",
+    `def f(x: bool) -> bool {
+        return x
+     }
+     f(none)`,
+  ],
+  [
     "Type Mismatch: return from function",
-    `def f() -> bool {
-        return 0
+    `def f(x: num) -> bool {
+        return x
      }`,
   ],
 ];

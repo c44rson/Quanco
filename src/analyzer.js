@@ -89,8 +89,6 @@ export default function analyze(match) {
         case "/":
           result /= rightVal;
           break;
-        default:
-          throw new Error(`Unsupported operator: ${node.op}`);
       }
     }
 
@@ -105,8 +103,6 @@ export default function analyze(match) {
         return node.value[0];
       case "BinaryExpression":
         return evaluateIteratively(node);
-      default:
-        throw new Error(`Unsupported node kind: ${node.kind}`);
     }
   }
 
@@ -172,7 +168,6 @@ export default function analyze(match) {
       context.lookup(name) ||
       context.class?.attributes.get(name) ||
       context.class?.methods.get(name);
-
     must(found, `Identifier ${name} not defined`, at);
   }
 
@@ -253,11 +248,26 @@ export default function analyze(match) {
 
   function equivalent(t1, t2) {
     const types = ["number", "boolean"];
+    if (t2.kind === "PropertyExpression") {
+      return equivalent(t1, t2.prop);
+    }
+    if (t2.kind === "ConstructorCall") {
+      return equivalent(t1, t2.callee.name);
+    }
+    if (t2.kind === "PostfixExpression") {
+      return equivalent(t1, t2.type);
+    }
     if (t1.kind === "UnionType") {
       return equivalent(t1.firstType, t2) || equivalent(t1.secondType, t2);
     }
     if (t2.kind === "UnionType") {
       return equivalent(t1, t2.firstType) || equivalent(t1, t2.secondType);
+    }
+    if (t1.kind === "Variable") {
+      return equivalent(t1.type, t2);
+    }
+    if (t2.kind === "Variable") {
+      return equivalent(t1, t2.type);
     }
     if (types.includes(typeof t1)) {
       return equivalent(t1.type, t2);
@@ -266,8 +276,8 @@ export default function analyze(match) {
       return equivalent(t1, t2.type);
     }
 
-    const e1 = t1.kind ? t1.type : t1;
-    const e2 = t2.kind ? t2.type : t2;
+    const e1 = context.lookup(t1) ? context.lookup(t1) : t1.kind ? t1.type : t1;
+    const e2 = context.lookup(t2) ? context.lookup(t2) : t2.kind ? t2.type : t2;
     return e1 === e2;
   }
 
@@ -279,12 +289,17 @@ export default function analyze(match) {
     must(context.class, "__init__ can only be used in a class", at);
   }
 
+  function mustBeAClass(e, at) {
+    must(e && e.kind === "Category", `${e} is not a class`, at);
+  }
+
   function mustBeCompatibleArguments(args, params, at) {
     mustHaveTheCorrectNumberOfArguments(args, params, at);
     mustHaveMatchingParamsAndArguments(args, params, at);
   }
 
   function mustHaveTheCorrectNumberOfArguments(args, params, at) {
+    params = params ? params : [];
     must(
       args.length === params.length,
       `${params.length} arguments expected, ${args.length} given`,
@@ -336,10 +351,7 @@ export default function analyze(match) {
   }
 
   function isMutable(e) {
-    return (
-      (e?.kind === "Variable" && e.readonly !== "false") ||
-      (e?.kind === "PropertyExpression" && isMutable(e?.readonly))
-    );
+    return e?.kind === "Variable" && e.readonly !== true;
   }
 
   function mustBeMutable(e, at) {
@@ -484,13 +496,31 @@ export default function analyze(match) {
     },
 
     Assignment(lval, _eq, expr) {
-      mustHaveBeenFound(lval.sourceString, { at: lval });
+      let target;
+      if (lval.sourceString.includes(".") && context.class === null) {
+        const [name] = lval.sourceString.split(".");
+        mustHaveBeenFound(name, { at: lval });
+        const globalClassName = context.locals.get(name).type;
+
+        mustBeAClass(context.lookup(globalClassName), { at: lval });
+        const category = context.lookup(globalClassName);
+        context.class = category;
+
+        mustHaveBeenFound("this." + lval.sourceString.split(".")[1], {
+          at: lval,
+        });
+        target = context.lookup("this." + lval.sourceString.split(".")[1]);
+        context.class = null;
+      } else {
+        mustHaveBeenFound(lval.sourceString, { at: lval });
+      }
       const sourceL = context.lookup(expr.sourceString);
 
-      const target = context.lookup(lval.sourceString);
+      target = target ? target : context.lookup(lval.sourceString);
       const source = sourceL ? sourceL : expr.rep();
       mustBothHaveTheSameType(target.type, source, { at: expr });
       mustBeMutable(target, { at: lval });
+      target.value = source;
       return core.assignment(target, source);
     },
 
@@ -694,26 +724,25 @@ export default function analyze(match) {
 
             op.shift();
             operationList.push(core.constructorCall(base, op));
-            return core.postfixExpression(operationList, base, base.name);
           } else {
             op = base.attributes.get("this." + op)
               ? base.attributes.get("this." + op)
               : base.methods.get(op);
-            console.log(op);
             operationList.push(core.propertyExpression(base, op));
-            return core.postfixExpression(operationList, base, op.type);
+            callee = op;
           }
         }
+        return core.postfixExpression(
+          operationList,
+          base,
+          operationList[operationList.length - 1]
+        );
       } else {
         for (let i = 0; i < ops.children.length; i++) {
           let op = ops.children[i].rep();
           if (Array.isArray(op)) {
             mustBeCompatibleArguments(op, callee.params, { at: ops });
             operationList.push(core.functionCall(callee, op));
-          } else {
-            mustHaveBeenFound(op, { at: ops });
-            operationList.push(core.propertyExpression(base, op));
-            callee = op;
           }
         }
         return core.postfixExpression(operationList, base, result.type);
@@ -774,17 +803,6 @@ export default function analyze(match) {
         case "none":
           return core.noneType;
       }
-    },
-
-    LValue(firstId, _dot, rest) {
-      let base = firstId.sourceString;
-
-      for (let dotAndId of rest.children) {
-        const prop = dotAndId.children[1].sourceString;
-        base = core.propertyExpression(base, prop);
-      }
-
-      return base;
     },
 
     _iter(...children) {
