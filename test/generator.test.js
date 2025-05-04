@@ -14,15 +14,15 @@ const fixtures = [
     name: "small",
     source: `
       x: str = "0"
-      y: num = 0 + 0 + ++0
+      y: num = 1
       z: bool = not true
-      y = 1
+      ++y
     `,
     expected: dedent`
       let x_1 = "0"
-      let y_2 = ((0 + 0) + ++(0))
+      let y_2 = 1
       let z_3 = !(true)
-      y_2 = 1
+      ++(y_2)
     `,
   },
 ];

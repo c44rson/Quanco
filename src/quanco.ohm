@@ -42,9 +42,9 @@ Quanco {
   ReturnStmt = return Exp                                       --longReturn
              | return ~alnum                                    --shortReturn
 
-  VarDecl = readonly? identifier ":" Type ("=" Exp)?
+  VarDecl = readonly? identifier ":" Type ("=" ~(unaryInc | unaryDec) Exp)?
 
-  Assignment = LValue ("+=" | "-=" | "=") Exp
+  Assignment = LValue ("+=" | "-=" | "=") ~(unaryInc | unaryDec) Exp
 
   Exp   = Exp "or" Exp1					        --OrExpr
         | Exp1

@@ -93,12 +93,13 @@ export default function generate(program) {
     },
 
     UnaryExpression(e) {
+      console.log(e.op);
       const operand = gen(e.operand);
       if (e.op === "not") {
         e.op = "!";
         return `${e.op}(${operand})`;
-      } else {
-        return `${e.op}(${operand})`;
+      } else if (e.op === "++" || e.op === "--") {
+        output.push(`${e.op}(${operand})`);
       }
     },
 
