@@ -53,10 +53,27 @@ export default function generate(program) {
 
     IfStatement(s) {
       // test, consequent, alternates, final
+      output.push(
+        `if (${gen(s.test.left)} ${gen(s.test.op)} ${gen(s.test.right)}) {`
+      );
+      s.consequent.forEach(gen);
+      if (s.alternates.length) {
+        s.alternates.forEach((alternate) => {
+          output.push(`} ${gen(alternate)}`);
+          console.log(gen(alternate));
+        });
+      }
     },
 
     ElifStatement(s) {
       // condition, body
+      output.push(
+        `} else if (${gen(s.condition.left)} ${gen(s.condition.op)} ${gen(
+          s.condition.right
+        )}) {`
+      );
+      s.body.forEach(gen);
+      output.push(`}`);
     },
 
     ForStatement(s) {

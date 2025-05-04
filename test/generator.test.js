@@ -23,6 +23,11 @@ const fixtures = [
       }
       while (y < 5) {
         ++y
+        if (y == 4) {
+          break
+        } elif (y == 3) {
+          break
+        }
       }
     `,
     expected: dedent`
@@ -36,6 +41,11 @@ const fixtures = [
       }
       while (y_2 < 5) {
         ++(y_2);
+        if (y_2 == 4) {
+          break;
+        } else if (y_2 == 3) {
+          break;
+        }
       }
     `,
   },
