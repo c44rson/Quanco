@@ -60,11 +60,23 @@ export default function generate(program) {
     },
 
     ForStatement(s) {
-      // iterator, condition, step, body
+      output.push(
+        `for (let ${gen(s.iterator.variable)} = ${gen(
+          s.iterator.initializer[0]
+        )}; ${gen(s.condition.left)} ${gen(s.condition.op)} ${gen(
+          s.condition.right
+        )}; ${s.step.op}${gen(s.step.operand)}) {`
+      );
+      s.body.forEach(gen);
+      output.push("}");
     },
 
     WhileStatement(s) {
-      // test, body
+      output.push(
+        `while (${gen(s.test.left)} ${gen(s.test.op)} ${gen(s.test.right)}) {`
+      );
+      s.body.forEach(gen);
+      output.push("}");
     },
 
     BreakStatement(s) {
@@ -72,7 +84,7 @@ export default function generate(program) {
     },
 
     VariableDeclaration(d) {
-      output.push(`let ${gen(d.variable)} = ${gen(d.initializer[0])}`);
+      output.push(`let ${gen(d.variable)} = ${gen(d.initializer[0])};`);
     },
 
     Variable(v) {
@@ -80,26 +92,25 @@ export default function generate(program) {
     },
 
     Assignment(s) {
-      output.push(`${gen(s.target)} = ${gen(s.source)}`);
+      output.push(`${gen(s.target)} = ${gen(s.source)};`);
     },
 
     BreakStatement(s) {
-      output.push("break");
+      output.push("break;");
     },
 
     BinaryExpression(e) {
       const op = { "==": "===", "!=": "!==" }[e.op] ?? e.op;
-      return `(${gen(e.left)} ${op} ${gen(e.right)})`;
+      return `(${gen(e.left)} ${op} ${gen(e.right)});`;
     },
 
     UnaryExpression(e) {
-      console.log(e.op);
       const operand = gen(e.operand);
       if (e.op === "not") {
         e.op = "!";
         return `${e.op}(${operand})`;
       } else if (e.op === "++" || e.op === "--") {
-        output.push(`${e.op}(${operand})`);
+        output.push(`${e.op}(${operand});`);
       }
     },
 

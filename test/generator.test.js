@@ -17,12 +17,26 @@ const fixtures = [
       y: num = 1
       z: bool = not true
       ++y
+      for i: num = 0, i < 5, ++i {
+        p: num = 1
+        break
+      }
+      while (y < 5) {
+        ++y
+      }
     `,
     expected: dedent`
-      let x_1 = "0"
-      let y_2 = 1
-      let z_3 = !(true)
-      ++(y_2)
+      let x_1 = "0";
+      let y_2 = 1;
+      let z_3 = !(true);
+      ++(y_2);
+      for (let i_4 = 0; i_4 < 5; ++i_4) {
+        let p_5 = 1;
+        break;
+      }
+      while (y_2 < 5) {
+        ++(y_2);
+      }
     `,
   },
 ];
