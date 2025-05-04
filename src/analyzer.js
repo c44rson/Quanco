@@ -116,8 +116,8 @@ export default function analyze(match) {
   }
 
   function mustNotBeInfiniteForLoop(it, con, step, at) {
-    let itL = context.lookup(it.variable.value[0]);
-    let itRootValue = itL ? itL.value[0] : it.variable.value[0];
+    let itLookup = context.lookup(it.variable.value[0]);
+    let itRootValue = itLookup ? itLookup.value[0] : it.variable.value[0];
     let conRootValue = con.right;
 
     const finalIteratorValue = evaluateIteratively(itRootValue);
@@ -136,8 +136,8 @@ export default function analyze(match) {
   }
 
   function mustBeExecutableLoop(it, con, at) {
-    let itL = context.lookup(it.variable.value[0]);
-    let itRootValue = itL ? itL.value[0] : it.variable.value[0];
+    let itLookup = context.lookup(it.variable.value[0]);
+    let itRootValue = itLookup ? itLookup.value[0] : it.variable.value[0];
     let conRootValue = con.right;
 
     const finalIteratorValue = evaluateIteratively(itRootValue);
@@ -256,9 +256,19 @@ export default function analyze(match) {
   }
 
   function equivalent(t1, t2) {
+    const type = ["num", "bool"];
     const types = ["number", "boolean"];
     if (t2.kind === "PropertyExpression") {
       return equivalent(t1, t2.prop);
+    }
+    if (t1.kind === "BinaryExpression") {
+      return equivalent(t1.type, t2);
+    }
+    if (t2.kind === "BinaryExpression") {
+      return equivalent(t1, t2.type);
+    }
+    if (t2.kind === "UnaryExpression") {
+      return equivalent(t1, t2.type);
     }
     if (t2.kind === "ConstructorCall") {
       return equivalent(t1, t2.callee.name);
@@ -285,8 +295,16 @@ export default function analyze(match) {
       return equivalent(t1, t2.type);
     }
 
-    const e1 = context.lookup(t1) ? context.lookup(t1) : t1.kind ? t1.type : t1;
-    const e2 = context.lookup(t2) ? context.lookup(t2) : t2.kind ? t2.type : t2;
+    const e1 = context.lookup(t1)
+      ? context.lookup(t1)
+      : type.includes(t1)
+      ? t1
+      : t1.type;
+    const e2 = context.lookup(t2)
+      ? context.lookup(t2)
+      : type.includes(t2)
+      ? t2
+      : t1.type;
     return e1 === e2;
   }
 
@@ -692,19 +710,18 @@ export default function analyze(match) {
     },
 
     Exp5_PrefixExpr(prefixOp, postfixExpr) {
-      let expression = context.lookup(postfixExpr.sourceString);
-
-      mustHaveAValue(postfixExpr.rep(), { at: postfixExpr });
-      const operand = context.lookup(postfixExpr.rep());
+      let expression = context.lookup(postfixExpr.sourceString)
+        ? context.lookup(postfixExpr.sourceString)
+        : postfixExpr.rep();
 
       if (prefixOp.sourceString === "++" || prefixOp.sourceString === "--") {
         const type = mustHaveNumericType(expression, { at: postfixExpr });
-        return core.unary(prefixOp.sourceString, operand, type);
+        return core.unary(prefixOp.sourceString, expression, type);
       }
 
       if (prefixOp.sourceString === "not") {
         const type = mustHaveBooleanType(expression, { at: prefixOp });
-        return core.unary(prefixOp.sourceString, operand, type);
+        return core.unary(prefixOp.sourceString, expression, type);
       }
     },
 
@@ -793,11 +810,7 @@ export default function analyze(match) {
 
     identifier(_this, _dot, firstChar, rest) {
       let name;
-      if (_this.sourceString) {
-        name = _this.sourceString + firstChar.sourceString + rest.sourceString;
-      } else {
-        name = firstChar.sourceString + rest.sourceString;
-      }
+      name = firstChar.sourceString + rest.sourceString;
       mustHaveBeenFound(name, { at: firstChar });
       return name;
     },
@@ -833,7 +846,7 @@ export default function analyze(match) {
     },
 
     string(_openQuote, _chars, _closeQuote) {
-      return core.stringType;
+      return this.sourceString;
     },
 
     BooleanLit(_) {
