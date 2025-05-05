@@ -31,16 +31,21 @@ class Context {
     this.global.get(category).methods.set(method.name, method);
   }
   lookup(name) {
+    if (typeof name === "string") {
+      if (!name.indexOf("this.")) {
+        name = name.split(".")[1];
+      }
+    }
     return (
       this.locals.get(name) ||
       this.global.get(name) ||
-      this.class?.attributes.get(name) ||
+      this.class?.attributes.get("this." + name) ||
       this.class?.methods.get(name)
     );
   }
   static root() {
     return new Context({
-      locals: new Map(Object.entries(core.standardLibrary)),
+      locals: new Map(),
     });
   }
   newChildContext(props) {
@@ -118,6 +123,7 @@ export default function analyze(match) {
   function mustNotBeInfiniteForLoop(it, con, step, at) {
     let itLookup = context.lookup(it.variable.value[0]);
     let itRootValue = itLookup ? itLookup.value[0] : it.variable.value[0];
+
     let conRootValue = con.right;
 
     const finalIteratorValue = evaluateIteratively(itRootValue);
@@ -136,13 +142,17 @@ export default function analyze(match) {
   }
 
   function mustBeExecutableLoop(it, con, at) {
-    let itLookup = context.lookup(it.variable.value[0]);
-    let itRootValue = itLookup ? itLookup.value[0] : it.variable.value[0];
-    let conRootValue = con.right;
+    if (it.kind === "Variable") {
+      var finalIteratorValue = evaluateIteratively(it);
+      var finalConValue = evaluateIteratively(con.right);
+    } else {
+      let itLookup = context.lookup(it.variable.value[0]);
+      let itRootValue = itLookup ? itLookup.value[0] : it.variable.value[0];
+      let conRootValue = con.right;
 
-    const finalIteratorValue = evaluateIteratively(itRootValue);
-    const finalConValue = evaluateIteratively(conRootValue);
-
+      var finalIteratorValue = evaluateIteratively(itRootValue);
+      var finalConValue = evaluateIteratively(conRootValue);
+    }
     let overlap = false;
 
     switch (con.op) {
@@ -298,13 +308,13 @@ export default function analyze(match) {
     const e1 = context.lookup(t1)
       ? context.lookup(t1)
       : type.includes(t1)
-      ? t1
-      : t1.type;
+        ? t1
+        : t1.type;
     const e2 = context.lookup(t2)
       ? context.lookup(t2)
       : type.includes(t2)
-      ? t2
-      : t1.type;
+        ? t2
+        : t1.type;
     return e1 === e2;
   }
 
@@ -404,7 +414,7 @@ export default function analyze(match) {
       context.assignCategory(id.sourceString, category);
 
       context = context.newChildContext({
-        locals: new Map(Object.entries(core.standardLibrary)),
+        locals: new Map(),
         inLoop: false,
         class: category,
       });
@@ -426,7 +436,7 @@ export default function analyze(match) {
 
       context.add(id.sourceString, fun);
       context = context.newChildContext({
-        locals: new Map(Object.entries(core.standardLibrary)),
+        locals: new Map(),
         inLoop: false,
         def: fun,
       });
@@ -494,7 +504,8 @@ export default function analyze(match) {
     ReturnStmt_longReturn(_return, exp) {
       mustBeInAFunction({ at: _return });
       mustReturnSomething(context.function, { at: _return });
-      let returnExp = exp.rep();
+      let returnL = context.lookup(exp.sourceString);
+      let returnExp = returnL ? returnL : exp.rep();
       mustBeReturnable(returnExp, { from: context.function }, { at: exp });
       return core.returnStatement(returnExp);
     },
@@ -511,14 +522,35 @@ export default function analyze(match) {
       const readonly = modifier.sourceString === "readonly";
       const name = id.sourceString;
       const typeR = type.rep();
-      const initializer = exp.rep();
-
-      initializer.forEach((child) => {
-        child = context.lookup(child) ? context.lookup(child) : child;
-        mustBothHaveTheSameType(typeR, child, { at: exp });
-      });
+      const initializerL = context.lookup(
+        exp.sourceString.split("=")[1]?.trim()
+      )
+        ? context.lookup(exp.sourceString.split("=")[1]?.trim())
+        : context.lookup(exp.sourceString.split(".")[1]?.trim());
+      const initializer = initializerL ? initializerL : exp.rep();
+      if (initializer.kind === "Variable") {
+        mustBothHaveTheSameType(typeR, initializer, { at: exp });
+      } else if (
+        initializer[0]?.ops &&
+        initializer[0]?.kind === "PostfixExpression" &&
+        initializer[0].type?.kind === "ConstructorCall"
+      ) {
+        context.class = initializer[0].type.callee;
+        let initLookup = context.lookup(exp.sourceString.split(".")[1]);
+        let init = initLookup ? initLookup : initializer[0].base.name;
+        mustBothHaveTheSameType(typeR, init, {
+          at: exp,
+        });
+        context.class = null;
+      } else {
+        initializer.forEach((child) => {
+          child = context.lookup(child) ? context.lookup(child) : child;
+          mustBothHaveTheSameType(typeR, child, { at: exp });
+        });
+      }
 
       const variable = core.variable(readonly, name, typeR, initializer);
+
       context.add(id.sourceString, variable);
       if (context.class) {
         context.assignAttribute(context.class.name, variable);
@@ -538,10 +570,10 @@ export default function analyze(match) {
         const category = context.lookup(globalClassName);
         context.class = category;
 
-        mustHaveBeenFound("this." + lval.sourceString.split(".")[1], {
+        mustHaveBeenFound(lval.sourceString.split(".")[1], {
           at: lval,
         });
-        target = context.lookup("this." + lval.sourceString.split(".")[1]);
+        target = context.lookup(lval.sourceString.split(".")[1]);
         context.class = null;
       } else {
         mustHaveBeenFound(lval.sourceString, { at: lval });
@@ -560,17 +592,24 @@ export default function analyze(match) {
     ForLoop(_for, varDecl, _comma1, condition, _comma2, unaryExpr, body) {
       const iterator = varDecl.rep();
 
-      mustHaveNumericType(iterator.variable, { at: varDecl });
-      mustHaveAValue(iterator.variable.name, { at: varDecl });
-
       const conditionExpr = condition.rep();
       mustBeBooleanOp(conditionExpr.op, { at: condition });
 
       const step = unaryExpr.rep();
       mustBeStepOp(step.op, { at: unaryExpr });
 
-      mustBeExecutableLoop(iterator, conditionExpr, { at: _for });
-      mustNotBeInfiniteForLoop(iterator, conditionExpr, step, { at: _for });
+      if (iterator.variable.value.kind === "Variable") {
+        mustHaveAValue(iterator.variable.value.name, { at: varDecl });
+        mustBeExecutableLoop(iterator.variable.value, conditionExpr, {
+          at: _for,
+        });
+      } else {
+        mustHaveAValue(iterator.variable.name, { at: varDecl });
+        mustBeExecutableLoop(iterator, conditionExpr, { at: _for });
+        mustNotBeInfiniteForLoop(iterator, conditionExpr, step, { at: _for });
+      }
+
+      mustHaveNumericType(iterator.variable, { at: varDecl });
 
       mustBeTheSameEntity(iterator.variable, conditionExpr.left, {
         at: condition,
@@ -734,53 +773,51 @@ export default function analyze(match) {
       if (this.sourceString.split("(")[0] === "print") {
         let args = [];
         for (let i = 0; i < ops.children.length; i++) {
-          args.push(ops.children[i].rep());
+          let op = ops.children[i].rep();
+          op = context.lookup(op[0]) ? context.lookup(op[0]) : op;
+          args.push(op);
         }
-        return core.print(args[0]);
+        return core.print(args);
       }
+
       mustHaveBeenFound(baseExpr.sourceString, { at: baseExpr });
       const base = context.lookup(baseExpr.sourceString);
       let result = base;
       let callee = base;
       let operationList = [];
-
       if (base.kind === "Category") {
-        for (let i = 0; i < ops.children.length; i++) {
-          let op = ops.children[i].rep();
-          if (Array.isArray(op)) {
-            op.unshift("self");
-
-            mustBeCompatibleArguments(op, callee.params, { at: ops });
-
-            op.shift();
-            operationList.push(core.constructorCall(base, op));
-          } else if (op === base.params) {
-            operationList.push(core.constructorCall(base, []));
-          } else {
-            if (context.class === null) {
-              let globalClass = context.lookup(base.name);
-              context.class = globalClass;
-
-              let name = context.lookup(op) ? op : "this." + op;
-              if (op && context.lookup(op)) {
-                name = op;
-              } else if (op && !context.lookup(op)) {
-                name = "this." + op;
-              } else {
-                name = base.name;
-              }
-
-              mustHaveBeenFound(name, { at: ops });
-              context.class = null;
-            }
-            op = base.attributes.get("this." + op)
-              ? base.attributes.get("this." + op)
-              : base.methods.get(op);
-            op = op ? op : base.name;
-            operationList.push(core.propertyExpression(base, op));
-            callee = op;
-          }
+        if (ops.sourceString === "()") {
+          var op = [];
+        } else {
+          var op = ops.children[0].rep();
         }
+
+        if (Array.isArray(op)) {
+          for (let i = 0; i < callee.params?.length; i++) {
+            if (callee.params[i] === "self") {
+              callee.params.shift();
+            }
+          }
+          mustBeCompatibleArguments(op, callee.params, { at: ops });
+
+          operationList.push(core.constructorCall(base, op));
+        } else if (op === base.params) {
+          operationList.push(core.constructorCall(base, []));
+        } else {
+          let globalClass = context.lookup(base.name);
+          if (globalClass) {
+            context.class = globalClass;
+            mustHaveBeenFound(op, { at: ops });
+            op = context.lookup(op);
+            context.class = null;
+          } else {
+            mustHaveBeenFound(op, { at: ops });
+            op = context.lookup(op);
+          }
+          operationList.push(core.propertyExpression(base, op));
+          callee = op;
+        }
+
         return core.postfixExpression(
           operationList,
           base,

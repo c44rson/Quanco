@@ -89,10 +89,13 @@ export default function generate(program) {
     },
 
     ForStatement(s) {
+      if (s.iterator.initializer.length) {
+        var iterator = gen(s.iterator.initializer[0]);
+      } else {
+        var iterator = gen(s.iterator.initializer);
+      }
       output.push(
-        `for (let ${gen(s.iterator.variable)} = ${gen(
-          s.iterator.initializer[0]
-        )}; ${gen(s.condition.left)} ${gen(s.condition.op)} ${gen(
+        `for (let ${gen(s.iterator.variable)} = ${iterator}; ${gen(s.condition.left)} ${gen(s.condition.op)} ${gen(
           s.condition.right
         )}; ${s.step.op}${gen(s.step.operand)}) {`
       );
@@ -109,10 +112,15 @@ export default function generate(program) {
     },
 
     VariableDeclaration(d) {
-      if (d.variable.name.includes("this.")) {
-        output.push(`${gen(d.variable)} = ${gen(d.initializer[0])};`);
+      if (d.initializer.length) {
+        var initializer = gen(d.initializer[0]);
       } else {
-        output.push(`let ${gen(d.variable)} = ${gen(d.initializer[0])};`);
+        var initializer = gen(d.initializer);
+      }
+      if (d.variable.name.includes("this.")) {
+        output.push(`${gen(d.variable)} = ${gen(initializer)};`);
+      } else {
+        output.push(`let ${gen(d.variable)} = ${gen(initializer)};`);
       }
     },
 
@@ -156,7 +164,7 @@ export default function generate(program) {
     },
 
     PropertyExpression(e) {
-      return `.${e.prop.name.split(".")[1]}`;
+      return `${e.base.name}.${e.prop.name.split(".")[1]}`;
     },
 
     PostfixExpression(e) {

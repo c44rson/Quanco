@@ -276,7 +276,7 @@ const semanticErrors = [
   [
     "Type Mismatch: argument vs. parameter in function",
     `def f(x: bool) -> bool {
-        return bool
+        return x
      }
      f("baby")`,
   ],

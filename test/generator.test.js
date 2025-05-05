@@ -32,15 +32,24 @@ const fixtures = [
   {
     name: "for",
     source: `
+      x: num = 0
       for i: num = 0, i < 5, ++i {
         p: num = 1
         break
+      }
+      for j: num = x, j < 5, ++j {
+        x = x
       }`,
     expected: dedent`
-      for (let i_1 = 0; i_1 < 5; ++i_1) {
-        let p_2 = 1;
+      let x_1 = 0;
+      for (let i_2 = 0; i_2 < 5; ++i_2) {
+        let p_3 = 1;
         break;
-      }`,
+      }
+      for (let j_4 = x_1; j_4 < 5; ++j_4) {
+        x_1 = x_1;
+      }
+      `,
   },
   {
     name: "while",
@@ -90,7 +99,7 @@ const fixtures = [
       }
       x()
       def f(c: num) -> num {
-        return num
+        return c
       }
       f(1)
     `,
@@ -100,7 +109,7 @@ const fixtures = [
       }
       x_1()
       function f_2(c_3) {
-        return num;
+        return c_3;
       }
       f_2(1)
       `,
@@ -140,7 +149,7 @@ const fixtures = [
           this.z_4 = 0;
         }
       }
-      let g_5 = new c_1(1).z;
+      let g_5 = new c_1(1);
       `,
   },
 ];

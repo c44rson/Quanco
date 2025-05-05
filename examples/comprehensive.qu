@@ -1,58 +1,14 @@
-class Student {
-    def __init__(self, name: str, age: int, gpa: float) {
-        readonly this.name: str = name
-        this.age: int = age
-        this.gpa: float = gpa
-        this.passing: bool
-        if this.gpa > 2.0 {
-            this.passing = true
+class c {
+    this.x: num = 1 + 1 * 1 / 1
+    def __init__(self, y: num) {
+        if (y > 1) {
+            print(y)
+        } elif (y < 1) {
+            print(y)
+        } else {
+            this.x = 2
         }
-        else {
-            this.passing = false
-        }
-    }
-
-    def doubleGPA(self) -> void {
-        this.gpa = this.gpa * 2
-    }
-
-    def isPassing(self) -> bool {
-        return this.passing
-    }
-    
-    def getOlder(self, years: int) -> void {
-        ++this.age--
-        for i: int = 0, i < years, i++ {
-            this.age += 1
-        }
-        j: int = (0 * 0) / 1
-        # does nothing fyi
-        while j < 10 and (true or false) {
-            j += 10E1e1
-        }
-    }
-
-    def isValedictorian(self) -> bool {
-        if this.gpa == 4.0 {
-            return true
-        }
-        elif this.gpa == 0.0 { 
-            return false
-        }
-        else {
-            return false
-        }
-    }
-
-    def describeMyself(self) -> void {
-        print(f"Hi my name is {this.name}! I am {this.age} years old! My gpa is {this.gpa}. It is {this.passing} that I am passing!")
+        
     }
 }
-
-student1: Student = Student("Carson", 20, 3.81)
-student2: Student | none = Student("Julian", 21, 1.99)
-
-studentList: list[Student] = [student1, student2]
-carsonDict: dict[str, int] = {student1.name: student1.age}
-
-carson: Student = studentList[0]
+g: c = c(1)

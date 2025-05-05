@@ -1,2 +1,6 @@
-x: str = "hello, world"
-print(x, x)
+class c {
+    this.x: num = 1
+}
+d: c = c()
+f: c
+f = c()
