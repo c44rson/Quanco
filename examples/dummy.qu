@@ -1,2 +1,6 @@
-x: bool = not true
-y: num = 0
+class d {
+    def __init__() {
+        this.x: num = 1
+    }
+}
+f: d = d()

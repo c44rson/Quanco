@@ -20,60 +20,72 @@ export default function generate(program) {
     },
 
     ClassDeclaration(c) {
-      // category
+      c.category.params = c.category.params ? c.category.params : [];
+      output.push(`class ${gen(c.category)} {`);
+      c.category.body.forEach((cat) => {
+        if (cat.name == "__init__") {
+          c.category.params = c.category.params.filter(
+            (param) => param !== "self"
+          );
+          output.push(
+            `constructor(${c.category.params.map(gen).join(", ")}) {`
+          );
+          c.category.constructor.body.forEach(gen);
+          output.push(`}`);
+        } else {
+          gen(cat);
+        }
+      });
+      output.push(`}`);
     },
 
     Category(c) {
-      // name, methods, attributes, params, body
-    },
-
-    ConstructorCall(c) {
-      // callee, args
+      return targetName(c);
     },
 
     FunctionDeclaration(d) {
-      // fun
+      d.fun.params = d.fun.params ? d.fun.params : [];
+      output.push(
+        `function ${gen(d.fun)}(${d.fun.params?.map(gen).join(", ")}) {`
+      );
+      d.fun.body.forEach(gen);
+      output.push("}");
     },
 
     Function(f) {
-      // name, params, body, type
-    },
-
-    FunctionCall(c) {
-      // callee, args
+      return targetName(f);
     },
 
     ReturnStatement(s) {
-      output.push(`return ${gen(s.expression)}`);
+      output.push(`return ${gen(s.expression)};`);
     },
 
     ShortReturnStatement(s) {
-      output.push("return");
+      output.push("return;");
     },
 
     IfStatement(s) {
-      // test, consequent, alternates, final
       output.push(
         `if (${gen(s.test.left)} ${gen(s.test.op)} ${gen(s.test.right)}) {`
       );
       s.consequent.forEach(gen);
-      if (s.alternates.length) {
-        s.alternates.forEach((alternate) => {
-          output.push(`} ${gen(alternate)}`);
-          console.log(gen(alternate));
-        });
+      s.alternates.forEach(gen);
+      if (s.final) {
+        output.push(`} else {`);
+        s.final.forEach(gen);
+        output.push(`}`);
+      } else {
+        output.push(`}`);
       }
     },
 
     ElifStatement(s) {
-      // condition, body
       output.push(
         `} else if (${gen(s.condition.left)} ${gen(s.condition.op)} ${gen(
           s.condition.right
         )}) {`
       );
       s.body.forEach(gen);
-      output.push(`}`);
     },
 
     ForStatement(s) {
@@ -96,12 +108,12 @@ export default function generate(program) {
       output.push("}");
     },
 
-    BreakStatement(s) {
-      output.push("break");
-    },
-
     VariableDeclaration(d) {
-      output.push(`let ${gen(d.variable)} = ${gen(d.initializer[0])};`);
+      if (d.variable.name.includes("this.")) {
+        output.push(`${gen(d.variable)} = ${gen(d.initializer[0])};`);
+      } else {
+        output.push(`let ${gen(d.variable)} = ${gen(d.initializer[0])};`);
+      }
     },
 
     Variable(v) {
@@ -118,7 +130,7 @@ export default function generate(program) {
 
     BinaryExpression(e) {
       const op = { "==": "===", "!=": "!==" }[e.op] ?? e.op;
-      return `(${gen(e.left)} ${op} ${gen(e.right)});`;
+      return `(${gen(e.left)} ${op} ${gen(e.right)})`;
     },
 
     UnaryExpression(e) {
@@ -131,12 +143,31 @@ export default function generate(program) {
       }
     },
 
+    ConstructorCall(c) {
+      return `new ${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
+    },
+
+    FunctionCall(c) {
+      if (c.args.length) {
+        output.push(`${gen(c.callee)}(${c.args.map(gen).join(", ")})`);
+      } else {
+        return output.push(`${gen(c.callee)}()`);
+      }
+    },
+
     PropertyExpression(e) {
-      // base, prop
+      if (e.prop.kind === "Variable") {
+        return `.${e.prop.name.split(".")[1]}`;
+      }
+      return `.${e.prop.value}`;
     },
 
     PostfixExpression(e) {
-      // ops, base, type
+      let start = "";
+      e.ops.forEach((op) => {
+        start = start + gen(op);
+      });
+      return start;
     },
   };
 

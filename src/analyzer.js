@@ -443,14 +443,19 @@ export default function analyze(match) {
     },
 
     ConstructorDecl(_def, __init__, _left, parameters, _right, block) {
+      mustNotAlreadyBeDefined(__init__.sourceString, { at: __init__ });
       mustBeInAClass({ at: __init__ });
-
       const fun = core.fun(__init__.sourceString);
+
       fun.type = core.noneType;
 
       context.class.params = parameters.children[0]?.rep();
 
       fun.body = block.rep();
+
+      context.class.constructor = fun;
+
+      return fun;
     },
 
     Params(param, _comma, paramList) {
@@ -743,6 +748,8 @@ export default function analyze(match) {
 
             op.shift();
             operationList.push(core.constructorCall(base, op));
+          } else if (op === base.params) {
+            operationList.push(core.constructorCall(base, []));
           } else {
             if (context.class === null) {
               let globalClass = context.lookup(base.name);
@@ -775,7 +782,7 @@ export default function analyze(match) {
         );
       } else {
         for (let i = 0; i < ops.children.length; i++) {
-          let op = ops.children[i].rep();
+          let op = ops.children[i].rep() ? ops.children[i].rep() : [];
           if (Array.isArray(op)) {
             mustBeCompatibleArguments(op, callee.params, { at: ops });
             operationList.push(core.functionCall(callee, op));

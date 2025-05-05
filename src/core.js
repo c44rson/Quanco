@@ -7,8 +7,16 @@ export function classDeclaration(category) {
   return { kind: "ClassDeclaration", category };
 }
 
-export function category(name, methods, attributes, params, body) {
-  return { kind: "Category", name, methods, attributes, params, body };
+export function category(name, methods, attributes, params, body, constructor) {
+  return {
+    kind: "Category",
+    name,
+    methods,
+    attributes,
+    params,
+    body,
+    constructor,
+  };
 }
 
 export function functionDeclaration(fun) {
