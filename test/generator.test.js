@@ -13,53 +13,74 @@ const fixtures = [
   {
     name: "basics",
     source: `
+      print("0")
       x: str = "0"
       y: num = (1 + 1)
       y = (1 * 1)
       z: bool = not true
       --y
-      for i: num = 0, i < 5, ++i {
-        p: num = 1
-        break
-      }
-      while (y < 5) {
-        ++y
-        if (y == 6) {
-          break
-        }
-        if (y == 4) {
-          break
-        } elif (y == 3) {
-          break
-        } else {
-          break
-        }
-      }
     `,
     expected: dedent`
+      console.log("0");
       let x_1 = "0";
       let y_2 = (1 + 1);
       y_2 = (1 * 1);
       let z_3 = !(true);
       --(y_2);
-      for (let i_4 = 0; i_4 < 5; ++i_4) {
-        let p_5 = 1;
-        break;
-      }
-      while (y_2 < 5) {
-        ++(y_2);
-        if (y_2 == 6) {
-          break;
-        }
-        if (y_2 == 4) {
-          break;
-        } else if (y_2 == 3) {
-          break;
-        } else {
-          break;
-        }
-      }
     `,
+  },
+  {
+    name: "for",
+    source: `
+      for i: num = 0, i < 5, ++i {
+        p: num = 1
+        break
+      }`,
+    expected: dedent`
+      for (let i_1 = 0; i_1 < 5; ++i_1) {
+        let p_2 = 1;
+        break;
+      }`,
+  },
+  {
+    name: "while",
+    source: `
+      y: num = 0
+      while (y < 5) {
+        ++y
+        if (y == 6) {
+          break
+        }
+      }`,
+    expected: dedent`
+      let y_1 = 0;
+      while (y_1 < 5) {
+        ++(y_1);
+        if (y_1 == 6) {
+          break;
+        }
+      }`,
+  },
+  {
+    name: "if",
+    source: `
+      y: num = 0
+      if (y == 4) {
+        y = 1
+      } elif (y == 3) {
+        y = 2
+      } else {
+        y = 3
+      }`,
+    expected: dedent`
+      let y_1 = 0;
+      if (y_1 == 4) {
+        y_1 = 1;
+      } else if (y_1 == 3) {
+        y_1 = 2;
+      } else {
+        y_1 = 3;
+      }`,
   },
   {
     name: "function",

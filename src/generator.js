@@ -151,15 +151,12 @@ export default function generate(program) {
       if (c.args.length) {
         output.push(`${gen(c.callee)}(${c.args.map(gen).join(", ")})`);
       } else {
-        return output.push(`${gen(c.callee)}()`);
+        output.push(`${gen(c.callee)}()`);
       }
     },
 
     PropertyExpression(e) {
-      if (e.prop.kind === "Variable") {
-        return `.${e.prop.name.split(".")[1]}`;
-      }
-      return `.${e.prop.value}`;
+      return `.${e.prop.name.split(".")[1]}`;
     },
 
     PostfixExpression(e) {
@@ -168,6 +165,10 @@ export default function generate(program) {
         start = start + gen(op);
       });
       return start;
+    },
+
+    Print(s) {
+      output.push(`console.log(${s.args.map(gen).join(", ")});`);
     },
   };
 

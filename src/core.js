@@ -27,6 +27,10 @@ export function fun(name, params, body, type) {
   return { kind: "Function", name, params, body, type };
 }
 
+export function print(args) {
+  return { kind: "Print", args };
+}
+
 export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
 }
@@ -104,6 +108,7 @@ export const numType = "num";
 export const stringType = "str";
 export const voidType = "void";
 export const noneType = "none";
+export const anyType = "any";
 
 // STD LIBRARY
 export const standardLibrary = Object.freeze({
@@ -111,6 +116,7 @@ export const standardLibrary = Object.freeze({
   boolean: booleanType,
   string: stringType,
   void: voidType,
+  any: anyType,
   none: noneType,
 });
 

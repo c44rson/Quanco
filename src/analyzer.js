@@ -731,11 +731,17 @@ export default function analyze(match) {
     },
 
     Exp6_PostfixExpr(baseExpr, ops) {
+      if (this.sourceString.split("(")[0] === "print") {
+        let args = [];
+        for (let i = 0; i < ops.children.length; i++) {
+          args.push(ops.children[i].rep());
+        }
+        return core.print(args[0]);
+      }
       mustHaveBeenFound(baseExpr.sourceString, { at: baseExpr });
       const base = context.lookup(baseExpr.sourceString);
       let result = base;
       let callee = base;
-
       let operationList = [];
 
       if (base.kind === "Category") {

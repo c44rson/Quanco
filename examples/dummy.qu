@@ -1,6 +1,2 @@
-class d {
-    def __init__() {
-        this.x: num = 1
-    }
-}
-f: d = d()
+x: str = "hello, world"
+print(x, x)
