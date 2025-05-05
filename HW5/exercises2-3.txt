@@ -1,0 +1,43 @@
+2.
+
+x86-64
+
+f:
+        test    dil, 1
+        jne     .L2
+        mov     eax, edi
+        shr     eax, 31
+        add     eax, edi
+        sar     eax
+        ret
+.L2:
+        lea     eax, [rdi+1+rdi*2]
+        ret
+
+Web Assembly
+
+f:
+        local.get       0
+        i32.const       3
+        i32.mul 
+        i32.const       1
+        i32.add 
+        local.get       0
+        i32.const       1
+        i32.shr_s
+        local.get       0
+        i32.const       1
+        i32.and 
+        i32.select
+        end_function
+
+3.
+
+EQTM​ is decidable. Given (M,w) construct:
+
+M1​: accepts x if x=wx=w and M accepts w.
+M2​: accepts nothing.
+
+Then L(M1)=L(M2)  <->  ML(M1​)=L(M2​)<->M does not accept w.
+
+Deciding EQTM would decide ATM which is undecidible and would be a contradiction, therefor EQTM is undecidable.
