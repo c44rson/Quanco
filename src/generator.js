@@ -89,11 +89,8 @@ export default function generate(program) {
     },
 
     ForStatement(s) {
-      if (s.iterator.initializer.length) {
-        var iterator = gen(s.iterator.initializer[0]);
-      } else {
-        var iterator = gen(s.iterator.initializer);
-      }
+      var iterator = gen(s.iterator.initializer);
+
       output.push(
         `for (let ${gen(s.iterator.variable)} = ${iterator}; ${gen(s.condition.left)} ${gen(s.condition.op)} ${gen(
           s.condition.right
@@ -170,7 +167,10 @@ export default function generate(program) {
     PropertyExpression(e) {
       if (!e.base.kind) {
         if (e.prop.kind === "Function") {
-          output.push(`${e.base}.${e.prop.name}()`);
+          e.prop.params.shift();
+          output.push(
+            `${e.base}.${e.prop.name}(${e.prop.params.map(gen).join(", ")});`
+          );
         }
         return `${e.base}.${e.prop.name.split(".")[1]}`;
       } else {

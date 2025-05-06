@@ -16,15 +16,15 @@ const fixtures = [
       print("0")
       x: str = "0"
       y: num = (1 + 1)
-      y = (1 * 1)
+      y = (2 * y) - y
       z: bool = not true
       --y
     `,
     expected: dedent`
       console.log("0");
       let x_1 = "0";
-      let y_2 = (1 + 1);
-      y_2 = (1 * 1);
+      let y_2 = 2;
+      y_2 = ((2 * y_2) - y_2);
       let z_3 = !(true);
       --(y_2);
     `,
@@ -46,8 +46,7 @@ const fixtures = [
         let p_3 = 1;
         break;
       }
-      for (let j_4 = x_1; j_4 < 5; ++j_4) {
-        x_1 = x_1;
+      for (let j_4 = x_1 + 1; j_4 < 5; ++j_4) {
       }
       `,
   },
@@ -150,6 +149,34 @@ const fixtures = [
         }
       }
       let g_5 = new c_1(1).z;
+      `,
+  },
+  {
+    name: "class methods",
+    source: `
+      class d {
+        def __init__(self, x: bool) {
+            this.valid: bool = x
+        }
+        def flipValid(self) -> void {
+            this.valid = not this.valid
+        }
+      }
+      example: d = d(true)
+      variable: bool = d.valid
+      d.flipValid()`,
+    expected: dedent`
+      class d_1 {
+        constructor(x_2) {
+        this.valid_3 = x_2;
+      }
+        function flipValid_4(self) {
+          this.valid_3 = !(this.valid_3);
+        }
+      }
+      let example_5 = new d_1(true);
+      let variable_6 = d.valid;
+      d.flipValid();
       `,
   },
   {
