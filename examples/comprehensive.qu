@@ -1,14 +1,24 @@
 class c {
-    this.x: num = 1 + 1 * 1 / 1
-    def __init__(self, y: num) {
-        if (y > 1) {
-            print(y)
-        } elif (y < 1) {
-            print(y)
+    this.a: num = 0
+    this.b: num = this.a
+    def __init__(self, d: num) {
+        if (d > 1) {
+            print(d)
+        } elif (d < 1) {
+            print(d)
         } else {
-            this.x = 2
+            this.b = 2
         }
         
     }
 }
-g: c = c(1)
+e: num = c(1).b
+f: c = c(1)
+g: num = e
+x: c
+def y(x: num, z: bool) -> void {
+    for i: num = x, i < 10, ++i {
+        print(i)
+    }
+}
+y(1, false)

@@ -1,6 +1,6 @@
-class c {
-    this.x: num = 1
+class d {
+    def __init__() {
+        this.x: num = 1
+    }
 }
-d: c = c()
-f: c
-f = c()
+f: d = d()

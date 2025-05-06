@@ -120,7 +120,11 @@ export default function generate(program) {
       if (d.variable.name.includes("this.")) {
         output.push(`${gen(d.variable)} = ${gen(initializer)};`);
       } else {
-        output.push(`let ${gen(d.variable)} = ${gen(initializer)};`);
+        if (initializer.length === 0) {
+          output.push(`let ${gen(d.variable)};`);
+        } else {
+          output.push(`let ${gen(d.variable)} = ${gen(initializer)};`);
+        }
       }
     },
 

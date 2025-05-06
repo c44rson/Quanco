@@ -105,7 +105,7 @@ const semanticChecks = [
       }
       x: d = d(true)
       x = d(false)
-    x.pure = 1`,
+      x.pure = 1`,
   ],
   [
     "class with method",

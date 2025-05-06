@@ -1,8 +1,0 @@
-def greet(name: str) -> str {
-    return f"Try hard, {name}! Keep rucking!"
-}
-
-result: str = greet("Julian")
-print(result)
-result = greet(name="Carson")
-print(result)

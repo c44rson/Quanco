@@ -149,7 +149,7 @@ const fixtures = [
           this.z_4 = 0;
         }
       }
-      let g_5 = new c_1(1);
+      let g_5 = this.z_4;
       `,
   },
 ];

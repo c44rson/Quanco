@@ -191,11 +191,7 @@ export default function analyze(match) {
   }
 
   function mustHaveAValue(name, at) {
-    must(
-      context.lookup(name)?.value.length,
-      `Identifier ${name} not declared`,
-      at
-    );
+    must(context.lookup(name)?.value, `Identifier ${name} not declared`, at);
   }
 
   function mustHaveNumericType(e, at) {
@@ -527,11 +523,12 @@ export default function analyze(match) {
       )
         ? context.lookup(exp.sourceString.split("=")[1]?.trim())
         : context.lookup(exp.sourceString.split(".")[1]?.trim());
-      const initializer = initializerL ? initializerL : exp.rep();
+
+      var initializer = initializerL ? initializerL : exp.rep();
+
       if (initializer.kind === "Variable") {
         mustBothHaveTheSameType(typeR, initializer, { at: exp });
       } else if (
-        initializer[0]?.ops &&
         initializer[0]?.kind === "PostfixExpression" &&
         initializer[0].type?.kind === "ConstructorCall"
       ) {
@@ -542,12 +539,19 @@ export default function analyze(match) {
           at: exp,
         });
         context.class = null;
+        if (init.kind === "Variable") {
+          initializer = init;
+        }
       } else {
         initializer.forEach((child) => {
           child = context.lookup(child) ? context.lookup(child) : child;
           mustBothHaveTheSameType(typeR, child, { at: exp });
         });
       }
+
+      initializer = context.lookup(initializer)
+        ? context.lookup(initializer)
+        : initializer;
 
       const variable = core.variable(readonly, name, typeR, initializer);
 
@@ -600,9 +604,6 @@ export default function analyze(match) {
 
       if (iterator.variable.value.kind === "Variable") {
         mustHaveAValue(iterator.variable.value.name, { at: varDecl });
-        mustBeExecutableLoop(iterator.variable.value, conditionExpr, {
-          at: _for,
-        });
       } else {
         mustHaveAValue(iterator.variable.name, { at: varDecl });
         mustBeExecutableLoop(iterator, conditionExpr, { at: _for });
@@ -618,11 +619,9 @@ export default function analyze(match) {
         at: unaryExpr,
       });
 
-      context = context.newChildContext({
-        inLoop: true,
-      });
+      context.inLoop = true;
       const bodyBlock = body.rep();
-      context = context.parent;
+      context.inLoop = false;
 
       return core.forStatement(iterator, conditionExpr, step, bodyBlock);
     },
@@ -632,11 +631,9 @@ export default function analyze(match) {
 
       mustHaveBooleanType(test, { at: condition });
 
-      context = context.newChildContext({
-        inLoop: true,
-      });
+      context.inLoop = true;
       const body = block.rep();
-      context = context.parent;
+      context.inLoop = false;
 
       return core.whileStatement(test, body);
     },
@@ -799,7 +796,6 @@ export default function analyze(match) {
             }
           }
           mustBeCompatibleArguments(op, callee.params, { at: ops });
-
           operationList.push(core.constructorCall(base, op));
         } else if (op === base.params) {
           operationList.push(core.constructorCall(base, []));
@@ -812,12 +808,10 @@ export default function analyze(match) {
             context.class = null;
           } else {
             mustHaveBeenFound(op, { at: ops });
-            op = context.lookup(op);
           }
           operationList.push(core.propertyExpression(base, op));
           callee = op;
         }
-
         return core.postfixExpression(
           operationList,
           base,
