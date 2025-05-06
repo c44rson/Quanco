@@ -46,7 +46,7 @@ const fixtures = [
         let p_3 = 1;
         break;
       }
-      for (let j_4 = x_1 + 1; j_4 < 5; ++j_4) {
+      for (let j_4 = x_1; j_4 < 5; ++j_4) {
       }
       `,
   },
