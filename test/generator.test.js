@@ -149,8 +149,62 @@ const fixtures = [
           this.z_4 = 0;
         }
       }
-      let g_5 = this.z_4;
+      let g_5 = new c_1(1).z;
       `,
+  },
+  {
+    name: "long",
+    source: `
+      class c {
+        this.a: num = 0
+        this.b: num = this.a
+        def __init__(self, d: num) {
+          if (d > 1) {
+            print(d)
+          } elif (d < 1) {
+            print(d)
+          } else {
+            this.b = 2
+          }
+        
+        }
+      }
+      e: num = c(1).b
+      f: c = c(1)
+      g: num = e
+      x: c
+      def y(x: num, z: bool) -> void {
+        for i: num = x, i < 10, ++i {
+            print(i)
+        }
+      }
+      y(1, false)
+    `,
+    expected: dedent`
+      class c_1 {
+        this.a_2 = 0;
+        this.b_3 = this.a_2;
+        constructor(d_4) {
+          if (d_4 > 1) {
+            console.log(d_4);
+          } else if (d_4 < 1) {
+            console.log(d_4);
+          } else {
+            this.b_3 = 2;
+          }
+        }
+      }
+      let e_5 = new c_1(1).b;
+      let f_6 = new c_1(1);
+      let g_7 = e_5;
+      let x_8;
+      function y_9(x_10, z_11) {
+        for (let i_12 = x_10; i_12 < 10; ++i_12) {
+          console.log(i_12);
+        }
+      }
+      y_9(1, false)
+    `,
   },
 ];
 

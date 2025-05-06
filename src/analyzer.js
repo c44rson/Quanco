@@ -264,6 +264,12 @@ export default function analyze(match) {
   function equivalent(t1, t2) {
     const type = ["num", "bool"];
     const types = ["number", "boolean"];
+    if (t2.kind === "PropertyExpression" && t2.base.kind === "Category") {
+      context.class = t2.base;
+      t2 = context.lookup(t2.prop) ? context.lookup(t2.prop) : t2.prop;
+      context.class = null;
+      return equivalent(t1, t2);
+    }
     if (t2.kind === "PropertyExpression") {
       return equivalent(t1, t2.prop);
     }
@@ -540,7 +546,7 @@ export default function analyze(match) {
         });
         context.class = null;
         if (init.kind === "Variable") {
-          initializer = init;
+          initializer = exp.rep();
         }
       } else {
         initializer.forEach((child) => {
@@ -797,6 +803,13 @@ export default function analyze(match) {
           }
           mustBeCompatibleArguments(op, callee.params, { at: ops });
           operationList.push(core.constructorCall(base, op));
+          if (this.sourceString.indexOf(".") !== -1) {
+            op = this.sourceString.split(".")[1];
+            context.class = context.lookup(base.name);
+            mustHaveBeenFound(op, { at: ops });
+            context.class = null;
+            operationList.push(core.propertyExpression(base, op));
+          }
         } else if (op === base.params) {
           operationList.push(core.constructorCall(base, []));
         } else {
@@ -809,7 +822,7 @@ export default function analyze(match) {
           } else {
             mustHaveBeenFound(op, { at: ops });
           }
-          operationList.push(core.propertyExpression(base, op));
+          operationList.push(core.propertyExpression(base.name, op));
           callee = op;
         }
         return core.postfixExpression(

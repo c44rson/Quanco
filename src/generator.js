@@ -168,7 +168,14 @@ export default function generate(program) {
     },
 
     PropertyExpression(e) {
-      return `${e.base.name}.${e.prop.name.split(".")[1]}`;
+      if (!e.base.kind) {
+        if (e.prop.kind === "Function") {
+          output.push(`${e.base}.${e.prop.name}()`);
+        }
+        return `${e.base}.${e.prop.name.split(".")[1]}`;
+      } else {
+        return `.${e.prop}`;
+      }
     },
 
     PostfixExpression(e) {
