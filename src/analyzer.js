@@ -121,8 +121,7 @@ export default function analyze(match) {
   }
 
   function mustNotBeInfiniteForLoop(it, con, step, at) {
-    let itLookup = context.lookup(it.variable.value[0]);
-    let itRootValue = itLookup ? itLookup.value[0] : it.variable.value[0];
+    let itRootValue = it.variable.value[0];
 
     let conRootValue = con.right;
 
@@ -142,17 +141,12 @@ export default function analyze(match) {
   }
 
   function mustBeExecutableLoop(it, con, at) {
-    if (it.kind === "Variable") {
-      var finalIteratorValue = evaluateIteratively(it);
-      var finalConValue = evaluateIteratively(con.right);
-    } else {
-      let itLookup = context.lookup(it.variable.value[0]);
-      let itRootValue = itLookup ? itLookup.value[0] : it.variable.value[0];
-      let conRootValue = con.right;
+    let itRootValue = it.variable.value[0];
+    let conRootValue = con.right;
 
-      var finalIteratorValue = evaluateIteratively(itRootValue);
-      var finalConValue = evaluateIteratively(conRootValue);
-    }
+    var finalIteratorValue = evaluateIteratively(itRootValue);
+    var finalConValue = evaluateIteratively(conRootValue);
+
     let overlap = false;
 
     switch (con.op) {
@@ -266,7 +260,7 @@ export default function analyze(match) {
     const types = ["number", "boolean"];
     if (t2.kind === "PropertyExpression" && t2.base.kind === "Category") {
       context.class = t2.base;
-      t2 = context.lookup(t2.prop) ? context.lookup(t2.prop) : t2.prop;
+      t2 = context.lookup(t2.prop);
       context.class = null;
       return equivalent(t1, t2);
     }
@@ -383,7 +377,7 @@ export default function analyze(match) {
   }
 
   function mustBeAssignable(e, { toType: type }, at) {
-    let source = context.lookup(e) ? context.lookup(e) : e;
+    let source = e;
     const target = type;
     const message = `Cannot assign a ${source.type} to a ${target}`;
     must(equivalent(source, target), message, at);
@@ -539,25 +533,16 @@ export default function analyze(match) {
         initializer[0].type?.kind === "ConstructorCall"
       ) {
         context.class = initializer[0].type.callee;
-        let initLookup = context.lookup(exp.sourceString.split(".")[1]);
-        let init = initLookup ? initLookup : initializer[0].base.name;
+        let init = initializer[0].base.name;
         mustBothHaveTheSameType(typeR, init, {
           at: exp,
         });
         context.class = null;
-        if (init.kind === "Variable") {
-          initializer = exp.rep();
-        }
       } else {
         initializer.forEach((child) => {
-          child = context.lookup(child) ? context.lookup(child) : child;
           mustBothHaveTheSameType(typeR, child, { at: exp });
         });
       }
-
-      initializer = context.lookup(initializer)
-        ? context.lookup(initializer)
-        : initializer;
 
       const variable = core.variable(readonly, name, typeR, initializer);
 
@@ -810,8 +795,6 @@ export default function analyze(match) {
             context.class = null;
             operationList.push(core.propertyExpression(base, op));
           }
-        } else if (op === base.params) {
-          operationList.push(core.constructorCall(base, []));
         } else {
           let globalClass = context.lookup(base.name);
           if (globalClass) {
@@ -819,8 +802,6 @@ export default function analyze(match) {
             mustHaveBeenFound(op, { at: ops });
             op = context.lookup(op);
             context.class = null;
-          } else {
-            mustHaveBeenFound(op, { at: ops });
           }
           operationList.push(core.propertyExpression(base.name, op));
           callee = op;

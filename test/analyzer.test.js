@@ -27,6 +27,7 @@ const semanticChecks = [
      d: bool = x <= 1
      e: bool = 1 <= x
      f: none | bool = true or false or d
+     g: bool = f
      `,
   ],
   [
@@ -66,7 +67,7 @@ const semanticChecks = [
   [
     "function with parameters",
     `def f(x: num, y: bool) -> bool {
-        return true
+        return y
     }
     f(0, true)
     `,
@@ -82,8 +83,10 @@ const semanticChecks = [
   [
     "non-void function",
     `def f(x: num) -> num {
-        return x 
-     }`,
+        return x
+     }
+     y: num = 0
+     f(y)`,
   ],
   [
     "class without constructor",
@@ -105,7 +108,8 @@ const semanticChecks = [
       }
       x: d = d(true)
       x = d(false)
-      x.pure = 1`,
+      x.pure = 1
+      z: num = d(true).pure`,
   ],
   [
     "class with method",
@@ -127,10 +131,14 @@ const semanticChecks = [
         def flipValid(self) -> void {
             this.valid = not this.valid
         }
+        def nothing(self, x: num) -> void {
+            print(x)
+        }
      }
      example: d = d(true)
      variable: bool = d.valid
      d.flipValid()
+     d.nothing(x)
      `,
   ],
   [
@@ -169,6 +177,33 @@ const semanticChecks = [
         }
         j += 2
       }`,
+  ],
+  [
+    "long",
+    `class c {
+      this.a: num = 0
+      this.b: num = this.a
+      def __init__(self, d: num) {
+        if (d > 1) {
+            print(d)
+        } elif (d < 1) {
+            print(d)
+        } else {
+            this.b = 2
+        }
+        
+      }
+    }
+    e: num = c(1).b
+    f: c = c(1)
+    g: num = e
+    x: c
+    def y(x: num, z: bool) -> void {
+      for i: num = x, i < 10, ++i {
+        print(i)
+     }
+    }
+    y(1, false)`,
   ],
 ];
 const semanticErrors = [
