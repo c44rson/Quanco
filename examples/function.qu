@@ -1,0 +1,14 @@
+def greet(name: str) -> str {
+    return "Try hard, " + name + "! Keep rucking!"
+}
+
+def x() -> void {
+    return
+}
+
+result: str = greet("Julian")
+print(result)
+result = greet("Carson")
+print(result)
+
+x()

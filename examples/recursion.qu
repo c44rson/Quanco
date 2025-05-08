@@ -1,0 +1,11 @@
+def lineout(depth: num) -> num {
+    if (depth == 0) {
+        return 1
+    }
+    else {
+        return depth * lineout(depth - 1)
+    }
+}
+
+result: num = lineout(5)
+print(result)

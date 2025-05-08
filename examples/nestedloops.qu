@@ -1,0 +1,11 @@
+def scrum() -> void {
+    phase: num = 0
+    tackle: num = 0
+    for x: num = phase, x < 4, ++x {
+        for y: num = tackle, y < 4, ++y {
+            print("Phase " + phase + ", Tackle " + tackle + " : Drive forward!")
+        }
+    }
+}
+
+scrum()
