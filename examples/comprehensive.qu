@@ -12,13 +12,76 @@ class c {
         
     }
 }
-e: num = c(1).b
-f: c = c(1)
-g: num = e
-x: c
+
+class d {
+    def __init__(self, x: bool) {
+        this.valid: bool = x
+    }
+    def flipValid(self) -> void {
+        this.valid = not this.valid
+    }
+}
+
 def y(x: num, z: bool) -> void {
     for i: num = x, i < 10, ++i {
         print(i)
     }
 }
+
+def greet(name: str) -> str {
+    return "Try hard, " + name + "! Keep rucking!"
+}
+
+def x() -> void {
+    return
+}
+
+def scrum() -> void {
+    phase: num = 0
+    tackle: num = 0
+    for x: num = phase, x < 4, ++x {
+        for y: num = tackle, y < 4, ++y {
+            print("Phase " + phase + ", Tackle " + tackle + " : Drive forward!")
+        }
+    }
+}
+
+# class d calls
+example: d = d(true)
+variable: bool = d.valid
+d.flipValid()
+
+# class c calls
+e: num = c(1).b
+f: c = c(1)
+g: num = e
+xa: c
+
+# function y calls
 y(1, false)
+
+# function greet calls
+result: str = greet("Julian")
+print(result)
+result = greet("Carson")
+print(result)
+
+# function x call
+x()
+
+# function scrum call
+scrum()
+
+
+# recursion
+def lineout(depth: num) -> num {
+    if (depth == 0) {
+        return 1
+    }
+    else {
+        return depth * lineout(depth - 1)
+    }
+}
+
+resulta: num = lineout(5)
+print(resulta)
