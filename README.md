@@ -110,112 +110,28 @@ scrum_1()
 ### Recursion
 Quanco:
 ```
-ruck lineout(depth: int) -> int {
-    if depth == 0 {
-        pass 1
+def lineout(depth: num) -> num {
+    if (depth == 0) {
+        return 1
     }
     else {
-        pass depth * lineout(depth - 1)
+        return depth * lineout(depth - 1)
     }
 }
 
-result: int = lineout(5)
+result: num = lineout(5)
 print(result)
 ```
 JavaScript:
 ```
-function lineout(depth) {
-    if (depth === 0) {
-        return 1;
-    } else {
-        return depth * lineout(depth - 1);
-    }
+function lineout_1(depth_2) {
+  if (depth_2 == 0) {
+    return 1;
+  } else {
+    return (depth_2 * lineout_1((depth_2 - 1)));
+  }
 }
-
-function main() {
-    const result = lineout(5);
-    console.log(result);  // Output: 120
-}
-
-main();
+let result_3 = lineout_1(5);
+console.log(result_3);
 ```
-### Lists and Dictionaries
-Quanco:
-```
-ruck maul() -> void {
-    players: list[str] = ["Julian", "Carson", "Ray"]
-    positions: dict[str, str] = {"Julian": "Flanker", "Carson": "Scrumhalf", "Ray": "Coach"}
-    player: str
-
-    for player in players {
-        position: str = positions.get(player, "sin bin")
-        print(player + " is in the " + position + " position")
-    }
-}
-
-maul()
-```
-JavaScript:
-```
-function maul() {
-    const players = ["Julian", "Carson", "Ray"];
-    const positions = { Julian: "Flyhalf", Carson: "Scrumhalf", Ray: "Coach" };
-
-    for (const player of players) {
-        const position = positions[player] || "sin bin";
-        console.log(`${player} is in the ${position} position`);
-    }
-}
-
-maul();
-```
-### Structs and Classes
-Quanco:
-```
-pitch RugbyPlayer {
-    ruck __init__(self, name: str, position: str, tries: int = 0) {
-        this.name: str = name
-        this.position: str = position
-        this.tries: int = tries
-    }
-
-    ruck scoreTry(self) -> void {
-        this.tries = 1
-        print(this.name + "scored a try! Total tries: " + this.tries)
-    }
-}
-
-optionalPlayer: RugbyPlayer | None = None
-player1: RugbyPlayer = RugbyPlayer("Julian", "Flanker")
-player1.scoreTry()
-
-optionalPlayer = RugbyPlayer("Carson", "Scrumhalf")
-optionalPlayer.scoreTry()
-```
-JavaScript:
-```
-class RugbyPlayer {
-    constructor(name, position, tries = 0) {
-        this.name = name;
-        this.position = position;
-        this.tries = tries;
-    }
-
-    scoreTry() {
-        this.tries += 1;
-        console.log(`${this.name} scored a try! Total tries: ${this.tries}`);
-    }
-}
-
-function main() {
-    let optionalPlayer = null;
-    const player1 = new RugbyPlayer("Julian", "Flyhalf");
-    player1.scoreTry();
-
-    optionalPlayer = new RugbyPlayer("Carson", "Scrumhalf");
-    optionalPlayer.scoreTry();
-}
-
-main();
-```
-
+### For more examples... see our examples folder!
