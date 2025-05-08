@@ -1,20 +1,31 @@
 <img src="https://github.com/c44rson/Quanco/blob/main/docs/QuancoLogo.png" alt="Quanco Logo" width="400" height="400">
 
 # Quanco
-A language for the intersection of Rugby fans, and those who love general-purpose scripting languages, like Python and TypeScript.
+A language for people who want a more robust, albeit annoying JS.
 https://c44rson.github.io/Quanco
 
 ## Our Story
-One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use parentheses and curly brackets, slowing them down immensely. During this time of extreme peril, a genius idea came to them. Why would anyone want to use Java for anything? Unable to remember the syntax of Python or TypeScript, they made a language that spoke to them.
+One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use semicolons, slowing them down immensely. During this time of extreme peril, a genius idea came to them. What if we made a language that didn't have semicolons?
 
 ## Notable Features
+* No semicolons :).
 * Block statements use curly braces.
 * Language is statically typed.
-* Class and Function arguments can be listed in order or by a given argument name.
-* No semicolons :).
-* function = ruck
-* struct = pitch
-* return = pass
+* Class and Function arguments must be listed in order and with all parameters.
+* For-loops that never run or are infinite are disallowed
+
+### Semantic Checks
+    "variable declarations",
+    "variable assignments",
+    "function without parameters",
+    "function with parameters",
+    "void function",
+    "non-void function",
+    "class without constructor",
+    "class with constructor",
+    "class with method",
+    "accessing class fields outside class",
+    "breaking for loop",
 
 ## Example Programs
 ### Defining and Calling a Function
@@ -181,18 +192,4 @@ function main() {
 
 main();
 ```
-
-### Semantic Checks
-    "variable declarations",
-    "variable assignments",
-    "function without parameters",
-    "function with parameters",
-    "void function",
-    "non-void function",
-    "class without constructor",
-    "class with constructor",
-    "class with method",
-    "accessing class fields outside class",
-    "breaking for loop",
-    "breaking while loop",
 
