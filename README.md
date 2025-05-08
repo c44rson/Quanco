@@ -47,28 +47,35 @@ One evening after a challenging and rather cumbersome Loyola Rugby practice in S
 ### Defining and Calling a Function
 Quanco:
 ```
-ruck greet(name: str) -> str {
-    pass "Try hard, " + name + "! Keep rucking!"
+def greet(name: str) -> str {
+    return "Try hard, " + name + "! Keep rucking!"
+}
+
+def x() -> void {
+    return
 }
 
 result: str = greet("Julian")
 print(result)
-result: str = greet(name="Carson")
+result = greet("Carson")
 print(result)
+
+x()
 ```
 JavaScript:
 ```
-function greet(name) {
-    return `Try hard, ${name}! Keep rucking!`;
+function greet_1(name_2) {
+  return (("Try hard, " + name_2) + "! Keep rucking!");
 }
-function main() {
-    let result = greet("Julian");
-    console.log(result);
-    result = greet("Carson");
-    console.log(result);
+function x_3() {
+  return;
 }
+let result_4 = greet_1("Julian");
+console.log(result_4);
+result_4 = greet_1("Carson");
+console.log(result_4);
+x_3()
 
-main();
 ```
 ### Nested Loops
 Quanco:
