@@ -16,32 +16,32 @@ One evening after a challenging and rather cumbersome Loyola Rugby practice in S
 
 ### Semantic Checks
 1. Type equivalence everywhere
-2. Loops
-2a. Break can only be used in a loop
-2b. An infinite for loop cannot be declared
-2c. A non-executable for loop cannot be declared
-2d. Entities in loop definition must match
-2e. Must use conditional operator in for loop termination statement
+2. Loops<b>
+2a. Break can only be used in a loop<b>
+2b. An infinite for loop cannot be declared<b>
+2c. A non-executable for loop cannot be declared<b>
+2d. Entities in loop definition must match<b>
+2e. Must use conditional operator in for loop termination statement<b>
 2f. Must use step operator in for loop step statement
-3. Identifiers
-3a. New identifiers must not already be defined (based on block unless global)
+3. Identifiers<b>
+3a. New identifiers must not already be defined (based on block unless global)<b>
 3b. Old identifiers must be defined
-4. Functions
-4a. Can only use return within a function
-4b. Function call arguments and function parameters must match
-4bi. Function call arguments and function parameters must have the same types
-4bii. Function call arguments and function parameters must be of the same quantity
-4c. Checks for void functions that somehow return a value
-4d. Checks for non-void functions that somehow do not return a value
+4. Functions<b>
+4a. Can only use return within a function<b>
+4b. Function call arguments and function parameters must match<b>
+4bi. Function call arguments and function parameters must have the same types<b>
+4bii. Function call arguments and function parameters must be of the same quantity<b>
+4c. Checks for void functions that somehow return a value<b>
+4d. Checks for non-void functions that somehow do not return a value<b>
 4e. Function returns themselves must be compatible with function declaration
-5. Classes
-5a. Constructor calls must be from a base that is a class
-5b. Constructor call arguments and Constructor parameters must match
-5bi. Constructor call arguments and Constructor parameters must have the same types
+5. Classes<b>
+5a. Constructor calls must be from a base that is a class<b>
+5b. Constructor call arguments and Constructor parameters must match<b>
+5bi. Constructor call arguments and Constructor parameters must have the same types<b>
 5bii. Constructor call arguments and Constructor parameters must be of the same quantity
-6. Variables
-6a. Assignments outside of declaration can only happen to mutable variables.
-6b. Union types are accepted.
+6. Variables<b>
+6a. Assignments outside of declaration can only happen to mutable variables.<b>
+6b. Union types are accepted.<b>
 
 ## Example Programs
 ### Defining and Calling a Function
