@@ -1,56 +1,119 @@
 <img src="https://github.com/c44rson/Quanco/blob/main/docs/QuancoLogo.png" alt="Quanco Logo" width="400" height="400">
 
 # Quanco
-A language for the intersection of Rugby fans, and those who love general-purpose scripting languages, like Python and TypeScript.
+A language for people who want a more robust, albeit annoying JS.
 https://c44rson.github.io/Quanco
 
 ## Our Story
-One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use parentheses and curly brackets, slowing them down immensely. During this time of extreme peril, a genius idea came to them. Why would anyone want to use Java for anything? Unable to remember the syntax of Python or TypeScript, they made a language that spoke to them.
+One evening after a challenging and rather cumbersome Loyola Rugby practice in Spring 2023, the heroes of our story, Carson Cabrera and Julian Mazzier hurried to the Keck Lab at LMU to grind their Data Structures and Applications homework. Unfortunately for our protagonists, although they loved programming in Java (mostly Julian), their accumulated brain damage from Coach Ray Thompson's unreasonable tackling drills and their many bouts with Long Beach State's "B side" made it near impossible for them to comprehend having to use semicolons, slowing them down immensely. During this time of extreme peril, a genius idea came to them. What if we made a language that didn't have semicolons?
 
 ## Notable Features
+* No semicolons :).
 * Block statements use curly braces.
 * Language is statically typed.
-* Class and Function arguments can be listed in order or by a given argument name.
-* No semicolons :).
-* function = ruck
-* struct = pitch
-* return = pass
+* Class and Function arguments must be listed in order and with all parameters.
+* For-loops that never run or are infinite are disallowed
+
+### Semantic Checks
+1. Type equivalence everywhere
+2. Loops<br>
+2a. Break can only be used in a loop<br>
+2b. An infinite for loop cannot be declared<br>
+2c. A non-executable for loop cannot be declared<br>
+2d. Entities in loop definition must match<br>
+2e. Must use conditional operator in for loop termination statement<br>
+2f. Must use step operator in for loop step statement
+3. Identifiers<br>
+3a. New identifiers must not already be defined (based on block unless global)<br>
+3b. Old identifiers must be defined
+4. Functions<br>
+4a. Can only use return within a function<br>
+4b. Function call arguments and function parameters must match<br>
+4bi. Function call arguments and function parameters must have the same types<br>
+4bii. Function call arguments and function parameters must be of the same quantity<br>
+4c. Checks for void functions that somehow return a value<br>
+4d. Checks for non-void functions that somehow do not return a value<br>
+4e. Function returns themselves must be compatible with function declaration
+5. Classes<br>
+5a. Constructor calls must be from a base that is a class<br>
+5b. Constructor call arguments and Constructor parameters must match<br>
+5bi. Constructor call arguments and Constructor parameters must have the same types<br>
+5bii. Constructor call arguments and Constructor parameters must be of the same quantity
+6. Variables<br>
+6a. Assignments outside of declaration can only happen to mutable variables.<br>
+6b. Union types are accepted.<br>
 
 ## Example Programs
+### Defining and Calling a Class
+Quanco:
+```
+class d {
+    def __init__(self, x: bool) {
+        this.valid: bool = x
+    }
+    def flipValid(self) -> void {
+        this.valid = not this.valid
+    }
+}
+example: d = d(true)
+variable: bool = d.valid
+d.flipValid()
+```
+JavaScript:
+```
+class d_1 {
+  constructor(x_2) {
+    this.valid_3 = x_2;
+  }
+  function flipValid_4(self) {
+    this.valid_3 = !(this.valid_3);
+  }
+}
+let example_5 = new d_1(true);
+let variable_6 = d.valid;
+d.flipValid();
+```
 ### Defining and Calling a Function
 Quanco:
 ```
-ruck greet(name: str) -> str {
-    pass "Try hard, " + name + "! Keep rucking!"
+def greet(name: str) -> str {
+    return "Try hard, " + name + "! Keep rucking!"
+}
+
+def x() -> void {
+    return
 }
 
 result: str = greet("Julian")
 print(result)
-result: str = greet(name="Carson")
+result = greet("Carson")
 print(result)
+
+x()
 ```
 JavaScript:
 ```
-function greet(name) {
-    return `Try hard, ${name}! Keep rucking!`;
+function greet_1(name_2) {
+  return (("Try hard, " + name_2) + "! Keep rucking!");
 }
-function main() {
-    let result = greet("Julian");
-    console.log(result);
-    result = greet("Carson");
-    console.log(result);
+function x_3() {
+  return;
 }
+let result_4 = greet_1("Julian");
+console.log(result_4);
+result_4 = greet_1("Carson");
+console.log(result_4);
+x_3()
 
-main();
 ```
 ### Nested Loops
 Quanco:
 ```
-ruck scrum() -> void {
-    phase: int
-    tackle: int
-    for phase in range(1, 4) {
-        for tackle in range(1, 4) {
+def scrum() -> void {
+    phase: num = 0
+    tackle: num = 0
+    for x: num = phase, x < 4, ++x {
+        for y: num = tackle, y < 4, ++y {
             print("Phase " + phase + ", Tackle " + tackle + " : Drive forward!")
         }
     }
@@ -60,139 +123,44 @@ scrum()
 ```
 JavaScript:
 ```
-function scrum() {
-    for (let phase = 1; phase <= 3; phase++) {
-        for (let tackle = 1; tackle <= 3; tackle++) {
-            console.log(`Phase ${phase}, Tackle ${tackle}: Drive forward!`);
-        }
+function scrum_1() {
+  let phase_2 = 0;
+  let tackle_3 = 0;
+  for (let x_4 = phase_2; x_4 < 4; ++x_4) {
+    for (let y_5 = tackle_3; y_5 < 4; ++y_5) {
+      console.log((((("Phase " + phase_2) + ", Tackle ") + tackle_3) + " : Drive forward!"));
     }
+  }
 }
 
-scrum();
+scrum_1()
+
 ```
 ### Recursion
 Quanco:
 ```
-ruck lineout(depth: int) -> int {
-    if depth == 0 {
-        pass 1
+def lineout(depth: num) -> num {
+    if (depth == 0) {
+        return 1
     }
     else {
-        pass depth * lineout(depth - 1)
+        return depth * lineout(depth - 1)
     }
 }
 
-result: int = lineout(5)
+result: num = lineout(5)
 print(result)
 ```
 JavaScript:
 ```
-function lineout(depth) {
-    if (depth === 0) {
-        return 1;
-    } else {
-        return depth * lineout(depth - 1);
-    }
+function lineout_1(depth_2) {
+  if (depth_2 == 0) {
+    return 1;
+  } else {
+    return (depth_2 * lineout_1((depth_2 - 1)));
+  }
 }
-
-function main() {
-    const result = lineout(5);
-    console.log(result);  // Output: 120
-}
-
-main();
+let result_3 = lineout_1(5);
+console.log(result_3);
 ```
-### Lists and Dictionaries
-Quanco:
-```
-ruck maul() -> void {
-    players: list[str] = ["Julian", "Carson", "Ray"]
-    positions: dict[str, str] = {"Julian": "Flanker", "Carson": "Scrumhalf", "Ray": "Coach"}
-    player: str
-
-    for player in players {
-        position: str = positions.get(player, "sin bin")
-        print(player + " is in the " + position + " position")
-    }
-}
-
-maul()
-```
-JavaScript:
-```
-function maul() {
-    const players = ["Julian", "Carson", "Ray"];
-    const positions = { Julian: "Flyhalf", Carson: "Scrumhalf", Ray: "Coach" };
-
-    for (const player of players) {
-        const position = positions[player] || "sin bin";
-        console.log(`${player} is in the ${position} position`);
-    }
-}
-
-maul();
-```
-### Structs and Classes
-Quanco:
-```
-pitch RugbyPlayer {
-    ruck __init__(self, name: str, position: str, tries: int = 0) {
-        this.name: str = name
-        this.position: str = position
-        this.tries: int = tries
-    }
-
-    ruck scoreTry(self) -> void {
-        this.tries = 1
-        print(this.name + "scored a try! Total tries: " + this.tries)
-    }
-}
-
-optionalPlayer: RugbyPlayer | None = None
-player1: RugbyPlayer = RugbyPlayer("Julian", "Flanker")
-player1.scoreTry()
-
-optionalPlayer = RugbyPlayer("Carson", "Scrumhalf")
-optionalPlayer.scoreTry()
-```
-JavaScript:
-```
-class RugbyPlayer {
-    constructor(name, position, tries = 0) {
-        this.name = name;
-        this.position = position;
-        this.tries = tries;
-    }
-
-    scoreTry() {
-        this.tries += 1;
-        console.log(`${this.name} scored a try! Total tries: ${this.tries}`);
-    }
-}
-
-function main() {
-    let optionalPlayer = null;
-    const player1 = new RugbyPlayer("Julian", "Flyhalf");
-    player1.scoreTry();
-
-    optionalPlayer = new RugbyPlayer("Carson", "Scrumhalf");
-    optionalPlayer.scoreTry();
-}
-
-main();
-```
-
-### Semantic Checks
-    "variable declarations",
-    "variable assignments",
-    "function without parameters",
-    "function with parameters",
-    "void function",
-    "non-void function",
-    "class without constructor",
-    "class with constructor",
-    "class with method",
-    "accessing class fields outside class",
-    "breaking for loop",
-    "breaking while loop",
-
+### For more examples... see our examples folder!
