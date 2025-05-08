@@ -80,11 +80,11 @@ x_3()
 ### Nested Loops
 Quanco:
 ```
-ruck scrum() -> void {
-    phase: int
-    tackle: int
-    for phase in range(1, 4) {
-        for tackle in range(1, 4) {
+def scrum() -> void {
+    phase: num = 0
+    tackle: num = 0
+    for x: num = phase, x < 4, ++x {
+        for y: num = tackle, y < 4, ++y {
             print("Phase " + phase + ", Tackle " + tackle + " : Drive forward!")
         }
     }
@@ -94,15 +94,18 @@ scrum()
 ```
 JavaScript:
 ```
-function scrum() {
-    for (let phase = 1; phase <= 3; phase++) {
-        for (let tackle = 1; tackle <= 3; tackle++) {
-            console.log(`Phase ${phase}, Tackle ${tackle}: Drive forward!`);
-        }
+function scrum_1() {
+  let phase_2 = 0;
+  let tackle_3 = 0;
+  for (let x_4 = phase_2; x_4 < 4; ++x_4) {
+    for (let y_5 = tackle_3; y_5 < 4; ++y_5) {
+      console.log((((("Phase " + phase_2) + ", Tackle ") + tackle_3) + " : Drive forward!"));
     }
+  }
 }
 
-scrum();
+scrum_1()
+
 ```
 ### Recursion
 Quanco:
