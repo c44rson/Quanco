@@ -44,6 +44,35 @@ One evening after a challenging and rather cumbersome Loyola Rugby practice in S
 6b. Union types are accepted.<br>
 
 ## Example Programs
+### Defining and Calling a Class
+Quanco:
+```
+class d {
+    def __init__(self, x: bool) {
+        this.valid: bool = x
+    }
+    def flipValid(self) -> void {
+        this.valid = not this.valid
+    }
+}
+example: d = d(true)
+variable: bool = d.valid
+d.flipValid()
+```
+JavaScript:
+```
+class d_1 {
+  constructor(x_2) {
+    this.valid_3 = x_2;
+  }
+  function flipValid_4(self) {
+    this.valid_3 = !(this.valid_3);
+  }
+}
+let example_5 = new d_1(true);
+let variable_6 = d.valid;
+d.flipValid();
+```
 ### Defining and Calling a Function
 Quanco:
 ```
