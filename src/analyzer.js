@@ -218,7 +218,12 @@ export default function analyze(match) {
       must(expectedTypes.includes(theType), "Expected a number or string", at);
       return theType;
     } else {
-      let theType = e;
+      var theType;
+      if (expectedTypes.includes(e)) {
+        theType = e;
+      } else {
+        theType = e.type;
+      }
       must(expectedTypes.includes(theType), "Expected a number or string", at);
       return theType;
     }
@@ -429,13 +434,14 @@ export default function analyze(match) {
       if (context.class) {
         context.assignMethod(context.class.name, fun);
       }
-
       context.add(id.sourceString, fun);
       context = context.newChildContext({
         locals: new Map(),
         inLoop: false,
         def: fun,
       });
+
+      context.add(id.sourceString, fun);
 
       fun.params = parameters.children[0]?.rep();
 
@@ -718,7 +724,6 @@ export default function analyze(match) {
 
       if (op === "+") {
         const type = mustHaveNumericOrStringType(left, { at: exp1 });
-        mustBothHaveTheSameType(left, right, { at: addOp });
         return core.binary(op, left, right, type);
       } else {
         const type = mustHaveNumericType(left, { at: exp1 });

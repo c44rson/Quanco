@@ -28,6 +28,7 @@ const semanticChecks = [
      e: bool = 1 <= x
      f: none | bool = true or false or d
      g: bool = f
+     w: str = "Try hard, " +  "! Keep rucking!"
      `,
   ],
   [

@@ -157,10 +157,17 @@ export default function generate(program) {
     },
 
     FunctionCall(c) {
+      if (c.callee.type === "void") {
+        if (c.args.length) {
+          output.push(`${gen(c.callee)}(${c.args.map(gen).join(", ")})`);
+        } else {
+          output.push(`${gen(c.callee)}()`);
+        }
+      }
       if (c.args.length) {
-        output.push(`${gen(c.callee)}(${c.args.map(gen).join(", ")})`);
+        return `${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
       } else {
-        output.push(`${gen(c.callee)}()`);
+        return `${gen(c.callee)}()`;
       }
     },
 
@@ -187,7 +194,11 @@ export default function generate(program) {
     },
 
     Print(s) {
-      output.push(`console.log(${s.args.map(gen).join(", ")});`);
+      if (s.args[0].map) {
+        output.push(`console.log(${s.args[0].map(gen).join(", ")});`);
+      } else {
+        output.push(`console.log(${s.args.map(gen).join(", ")});`);
+      }
     },
   };
 

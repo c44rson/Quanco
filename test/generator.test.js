@@ -91,26 +91,34 @@ const fixtures = [
       }`,
   },
   {
-    name: "function",
+    name: "functions",
     source: `
       def x() -> void {
         return
       }
       x()
-      def f(c: num) -> num {
-        return c
+      def f(x: num) -> void {
+        return
       }
-      f(1)
+      f(2)
+      def y(x: num) -> num {
+        return x
+      }
+      y(1)
     `,
+    // note that non-void function calls do not generate as there is no use
     expected: dedent`
       function x_1() {
         return;
       }
       x_1()
-      function f_2(c_3) {
-        return c_3;
+      function f_2(x_3) {
+        return;
       }
-      f_2(1)
+      f_2(2)
+      function y_4(x_5) {
+        return x_5;
+      }
       `,
   },
   {
